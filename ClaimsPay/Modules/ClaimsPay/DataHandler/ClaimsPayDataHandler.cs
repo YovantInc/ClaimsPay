@@ -14,6 +14,7 @@ using AppConfig = ClaimsPay.Shared.AppConfig;
 using Constants = ClaimsPay.Modules.ClaimsPay.Models.Constants;
 using ClaimsPay.Modules.ClaimsPay.Models.CreateVendor;
 using NLog;
+using System.Xml;
 
 namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 {
@@ -34,6 +35,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         bool logIsError = false;
         string logErrorDetails = string.Empty;
 
+        Constants objConstants = new Constants();
+
         #endregion
 
         #region Create Payment Master
@@ -46,7 +49,10 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         #region Create Vendor
         public async Task<JObject> ClaimsPayDataHandlerCreateVendor(JObject objJsonRequest)
         {
+            XmlDocument document = new XmlDocument();
+            document.Load("nlog.config");
             var _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+
             _logger.Info("\r\n");
             _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
             _logger.Info("\r\n");
@@ -63,90 +69,101 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 RestData objRequestCreateVendor = new RestData();
                 Str_Json objStr_Json = new Str_Json();
                 PartyDetails objPartyDetails = new PartyDetails();
-              
 
-                if (!string.IsNullOrEmpty(objJsonRequest["partyID"].ToString()))
+
+
+                if (!string.IsNullOrEmpty(objJsonRequest["PartyID"].ToString()))
                 {
-                    //Here needs to Deserialize party ID    
-                    //objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(objJsonRequest.ToString());
+                    var result = await GetPartyDetails(objJsonRequest["PartyID"].ToString());
+                    objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(result.ToString());
 
-
-                    string sessionID = await GetSessionID();
-                    if (sessionID.Length > 0)
+                    if (objPartyDetails.partyBusinessDetail != null)
                     {
-                        var result = await GetPartyDetails(objJsonRequest["partyID"].ToString());
-                        objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(result.ToString());
-
-                        objRequestCreateVendor.session = sessionID;
-                        objStr_Json.BUS_BusinessId = objPartyDetails.partyID;
-                        objStr_Json.BUS_Type = "Vendor";
-                        objStr_Json.BUS_SubType = "Other Vendor";
-                        if (objPartyDetails.partyIndividualDetail != null)
+                        if (objPartyDetails.partyBusinessDetail.party.partyTypeCode == Constants.PartyType)
                         {
-                            if (objPartyDetails.partyIndividualDetail.party.partyTypeCode != "IND")
+                            objStr_Json.BUS_TIN = objPartyDetails.partyBusinessDetail.partyBusiness.registrationID1;
+
+                            string sessionID = await GetSessionID();
+                            if (sessionID.Length > 0)
                             {
-                                objStr_Json.BUS_TIN = objPartyDetails.partyBusinessDetail.partyBusiness.registrationID1;
+                                objRequestCreateVendor.session = sessionID;
+                                objStr_Json.BUS_BusinessId = objPartyDetails.partyID;
+                                objStr_Json.BUS_Type = Constants.BUS_Type;
+                                objStr_Json.BUS_SubType = await GetParticipantRole(objJsonRequest["ParticipantRolesDTO"][0]["ParticipantRole"].ToString() == "" ? "" : objJsonRequest["ParticipantRolesDTO"][0]["ParticipantRole"].ToString());
+
+                                objStr_Json.BUS_TINType = Constants.BUS_TINType;
+
+                                if (objPartyDetails.partyBusinessDetail != null)
+                                {
+                                    for (int i = 0; i < objPartyDetails.partyBusinessDetail.partyAddressDetail.Count; i++)
+                                    {
+                                        if (objPartyDetails.partyBusinessDetail.partyAddressDetail[i].partyAddress.isPrimary == true &&
+                                            objPartyDetails.partyBusinessDetail.partyAddressDetail[i].partyAddress.addressID == objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.addressID)
+                                        {
+                                            objStr_Json.BUS_Street = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.locationDetailsLine1;
+                                            objStr_Json.BUS_City = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.adminDivisionPrimary;
+                                            objStr_Json.BUS_State = await GetState(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.nationalDivisionPrimary);
+                                            objStr_Json.BUS_Zipcode = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.postalCode;
+                                            objStr_Json.BUS_Country = await GetCountry(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.countryCode.ToString().ToUpper());
+                                        }
+
+                                    }
+
+
+
+                                    for (int i = 0; i < objPartyDetails.partyBusinessDetail.partyBusNameDetail.Count; i++)
+                                    {
+
+                                        if (objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyName.isPrimary == true &&
+                                            objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyName.partyNameID == objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyBusName.partyBusNameID)
+                                        {
+                                            objStr_Json.BUS_Name = objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyBusName.name.ToUpper();
+                                        }
+                                    }
+
+                                }
+                                objStr_Json.BUS_Status = Constants.BUS_Status;
+
+                                objRequestCreateVendor.str_json = objStr_Json;
+
+                                var opt = new JsonSerializerOptions() { WriteIndented = true };
+                                string strJson = System.Text.Json.JsonSerializer.Serialize<RestData>(objRequestCreateVendor, opt);
+                                var loginParams = JObject.Parse(strJson);
+                                _logger.Info("\r\n");
+                                _logger.Info("Request");
+                                _logger.Info(strJson);
+
+                                baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
+                                string lURL = baseURL + "?method=CreateVendor&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(strJson);
+
+                                var response = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
+                                json = JObject.Parse(response.Result.ToString());
+
+                                _logger.Info("\r\n");
+                                _logger.Info("Response");
+                                _logger.Info(json);
+
+                                _logger.Info("\r\n");
+                                _logger.Info("Create Vendor Executed Successfully");
+                            }
+                            else
+                            {
+                                _logger.Info("\r\n");
+                                _logger.Info("Session id not created");
+                                //Log error session id not created
                             }
                         }
-                        objStr_Json.BUS_TINType = "SSN";
-
-                        if (objPartyDetails.partyBusinessDetail != null)
-                        {
-                            for (int i = 0; i < objPartyDetails.partyBusinessDetail.partyAddressDetail.Count; i++)
-                            {
-                                if (objPartyDetails.partyBusinessDetail.partyAddressDetail[i].partyAddress.isPrimary == true &&
-                                    objPartyDetails.partyBusinessDetail.partyAddressDetail[i].partyAddress.addressID == objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.addressID)
-                                {
-                                    objStr_Json.BUS_Street = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.locationDetailsLine1;
-                                    objStr_Json.BUS_City = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.adminDivisionPrimary;
-                                    objStr_Json.BUS_State = await GetState(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.nationalDivisionPrimary);
-                                    objStr_Json.BUS_Zipcode = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.postalCode;
-                                    objStr_Json.BUS_Country = await GetCountry(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.countryCode.ToString().ToUpper());
-                                }
-
-                            }
-
-
-
-                            for (int i = 0; i < objPartyDetails.partyBusinessDetail.partyBusNameDetail.Count; i++)
-                            {
-
-                                if (objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyName.isPrimary == true &&
-                                    objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyName.partyNameID == objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyBusName.partyBusNameID)
-                                {
-                                    objStr_Json.BUS_Name = objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyBusName.name.ToUpper();
-                                }
-                            }
-
-                        }
-                        objStr_Json.BUS_Status = "Active";
-
-                        objRequestCreateVendor.str_json = objStr_Json;
-
-                        var opt = new JsonSerializerOptions() { WriteIndented = true };
-                        string strJson = System.Text.Json.JsonSerializer.Serialize<RestData>(objRequestCreateVendor, opt);
-                        var loginParams = JObject.Parse(strJson);
-                        _logger.Info("\r\n");
-                        _logger.Info("Request");
-                        _logger.Info(strJson);
-
-                        baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
-                        string lURL = baseURL + "?method=CreateVendor&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(strJson);
-
-                        var response = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
-                        json = JObject.Parse(response.Result.ToString());
-
-                        _logger.Info("\r\n");
-                        _logger.Info("Response");
-                        _logger.Info(json);
-
-                        _logger.Info("\r\n");
-                        _logger.Info("Create Vendor Executed Successfully");
+                        //else
+                        //{
+                        //    json=JObject.Parse("{\r\n\t\"Status\": \"Failed\",\r\n\t\"Message\": \"Party type is not bussiness\"\r\n}");
+                        //    //return data that party type is not bussiness
+                        //}
                     }
                     else
                     {
-
+                        json = JObject.Parse("{\r\n\t\"Status\": \"Failed\",\r\n\t\"Message\": \"Party type is not bussiness\"\r\n}");
                     }
+
                 }
             }
             catch (Exception ex)
@@ -354,7 +371,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 _logger.Info("\r\n");
                 _logger.Info("Request");
                 _logger.Info(URI);
-
+                objhttpClient.DefaultRequestHeaders.Clear();
                 objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimAPIDefaultUser"]);
                 objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimAPIKEY"]);
 
@@ -413,6 +430,16 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         {
 
         }
+        #endregion
+
+        #region Get Participant Role
+        public async Task<string> GetParticipantRole(string key_name)
+        {
+            JObject objStateKeys = JObject.Parse(File.ReadAllText(@"Shared\\ParticipantRole.json"));
+            string value = objStateKeys[key_name].ToString();
+            return value;
+        }
+
         #endregion
     }
 }

@@ -79,7 +79,10 @@
         public static string Status_DoneNoItems = "DONE0";
         public static string Status_Done = "DONE";
         public static string Status_NoClaim = "NOCLM";
-        public static string BUS_TINType = "SSN";
+        public static string BUS_TINType = "TIN";
+        public static string BUS_Type = "Vendor";
+        public static string BUS_Status = "Active";
+        public static string PartyType = "BUS";
 
         public static string EventProcessBatchItem = "IP_ProcessItem";
         public static string EventProcessBulkBatch = "IPB_ProcessBatch";
