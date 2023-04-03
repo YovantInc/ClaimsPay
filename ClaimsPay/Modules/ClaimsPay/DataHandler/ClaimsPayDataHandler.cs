@@ -127,14 +127,17 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 objRequestCreateVendor.str_json = objStr_Json;
 
                                 var opt = new JsonSerializerOptions() { WriteIndented = true };
-                                string strJson = System.Text.Json.JsonSerializer.Serialize<RestData>(objRequestCreateVendor, opt);
+                                string strJson = System.Text.Json.JsonSerializer.Serialize<Str_Json>(objStr_Json, opt);
                                 var loginParams = JObject.Parse(strJson);
+                                JObject createVendorPaymentRequest = new JObject(
+                                  new JProperty("session", sessionID),
+                                  new JProperty("str_json", strJson.ToString()));
                                 _logger.Info("\r\n");
                                 _logger.Info("Request");
                                 _logger.Info(strJson);
 
                                 baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
-                                string lURL = baseURL + "?method=CreateVendor&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(strJson);
+                                string lURL = baseURL + "?method=CreateVendor&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(createVendorPaymentRequest.ToString());
 
                                 var response = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
                                 json = JObject.Parse(response.Result.ToString());
