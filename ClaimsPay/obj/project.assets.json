@@ -1145,24 +1145,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\AkshayDebadwar\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Subham\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
+      "projectUniqueName": "C:\\Users\\Subham\\Desktop\\OneInc Claims\\Repository\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
       "projectName": "ClaimsPay",
-      "projectPath": "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
-      "packagesPath": "C:\\Users\\AkshayDebadwar\\.nuget\\packages\\",
-      "outputPath": "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\obj\\",
+      "projectPath": "C:\\Users\\Subham\\Desktop\\OneInc Claims\\Repository\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
+      "packagesPath": "C:\\Users\\Subham\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Subham\\Desktop\\OneInc Claims\\Repository\\ClaimsPay\\ClaimsPay\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\AkshayDebadwar\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Users\\Subham\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -1232,7 +1227,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
       }
     }
   }
