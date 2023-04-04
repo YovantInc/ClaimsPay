@@ -55,27 +55,7 @@ namespace ClaimsPay.Modules.OneInc
                 var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerCreateVendor(objRequest);
 
                 string objResponse = string.Empty;
-                ////JObject objRequest = JObject.Parse(dtmodel.ToString());
-                //var validationResult = await validator.ValidateAsync(objRequest);
-                //if (!validationResult.IsValid)
-                //{
-                //    objResult= Results.ValidationProblem(validationResult.ToDictionary());
-
-                //}
-                //else
-                //{
-                //}
-                //if (!string.IsNullOrEmpty(partyID))
-                //{
-                //    var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerCreateVendor(partyID);
-                //}
-                //else
-                //{
-                //    objResponse = "Party id is reuired";
-                //}
-
-
-
+                
                 JObject jobj = JObject.Parse(result.ToString());
 
                 return await Task.FromResult(result.ToString());
