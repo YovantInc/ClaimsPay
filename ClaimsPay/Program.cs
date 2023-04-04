@@ -25,12 +25,12 @@ AppConfig.configuration = builder.Configuration;
 
 var app = builder.Build();
 
-app.UseFileServer(new FileServerOptions
-{
-    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles")),
-    RequestPath="/StaticFiles",
-    EnableDefaultFiles= true
-});
+//app.UseFileServer(new FileServerOptions
+//{
+//    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "StaticFiles")),
+//    RequestPath="/StaticFiles",
+//    EnableDefaultFiles= true
+//});
 
 app.MapEndpoints();
 app.UseHttpsRedirection();
