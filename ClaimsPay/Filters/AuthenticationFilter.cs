@@ -32,12 +32,12 @@ namespace ClaimsPay.Filters
             
             var headerToken = context.HttpContext.Request.Headers[_filterType];
             var authKeyPath = _filterType.ToString().Replace("_", ":");
-            var matchingConfigToken = AppConfig.configuration?.GetSection($"Modules:{authKeyPath}")["AuthenticationFilter"];
+            var matchingConfigToken = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["AuthenticationFilter"];
 
             if (matchingConfigToken != null && headerToken != matchingConfigToken)
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.HttpContext.Response.WriteAsync(AppConfig.configuration?.GetSection($"Modules:{authKeyPath}")["APIKeyErrorMessage"].ToString());
+                await context.HttpContext.Response.WriteAsync(AppConfig.configuration?.GetSection($"Modules:SystemConfig")["APIKeyErrorMessage"].ToString());
                 await context.HttpContext.Response.CompleteAsync();
                 return context;
             }

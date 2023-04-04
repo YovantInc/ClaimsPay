@@ -22,21 +22,11 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
     {
 
         #region Initialize Variables
+
         AppHttpClient appHttpClient = new();
         HttpClient objhttpClient = new();
         string baseURL = string.Empty;
-
-        string logRequest = string.Empty;
-        string logResponse = string.Empty;
-        string logTime = string.Empty;
-        string logType = string.Empty;
-        string logMessage = string.Empty;
-        string logMethodName = string.Empty;
-        bool logIsError = false;
-        string logErrorDetails = string.Empty;
-
-        Constants objConstants = new Constants();
-
+                
         #endregion
 
         #region Create Payment Master
@@ -363,20 +353,20 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             {
 
                 _logger.Info("\r\n");
-                //_logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
+                
                 _logger.Info("\r\n");
                 _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Party Detail ");
                 _logger.Info("");
 
-                string baseURI = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimAPIURI"];
+                string baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
                 string URI = baseURI + "/v2/parties/" + partyID + "/partyDetails";
 
                 _logger.Info("\r\n");
                 _logger.Info("Request");
                 _logger.Info(URI);
                 objhttpClient.DefaultRequestHeaders.Clear();
-                objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimAPIDefaultUser"]);
-                objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimAPIKEY"]);
+                objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
+                objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
 
                 var result = await objhttpClient.GetAsync(URI).Result.Content.ReadAsStringAsync();
 
