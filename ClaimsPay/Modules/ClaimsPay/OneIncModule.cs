@@ -26,20 +26,15 @@ namespace ClaimsPay.Modules.OneInc
         {
 
             #region Create Payment Master
-            endpoints.MapPost($"CreatePaymentMaster", async Task<JObject> (HttpRequest request, IValidator<RestData> validator, RestData objRestData) =>
+            endpoints.MapPost($"CreatePaymentMaster", async Task<JObject> (HttpRequest request) =>
             {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
+                JObject objRequest = JObject.Parse(requestJson);
 
-                //var validationResult = await validator.ValidateAsync(objRestData);
-                //if (!validationResult.IsValid)
-                //{
-                var result = "";// Results.ValidationProblem(validationResult.ToDictionary());
-
-                //}
-
-                string str = await objClaimsPayDataHandler.GetSessionID();
-                JObject objResponse = JObject.Parse(result.ToString());
+                var result = objClaimsPayDataHandler.HandleCreatePaymentMaster(objRequest);
+               
+                JObject objResponse = JObject.Parse(result.Result.ToString());
 
                 return await Task.FromResult(objResponse);
             }).AddEndpointFilter<ClaimsPayFilter>()

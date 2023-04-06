@@ -15,6 +15,9 @@ using Constants = ClaimsPay.Modules.ClaimsPay.Models.Constants;
 using ClaimsPay.Modules.ClaimsPay.Models.CreateVendor;
 using NLog;
 using System.Xml;
+using NLog.Targets;
+using NLog.Config;
+using LogLevel = NLog.LogLevel;
 
 namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 {
@@ -30,9 +33,27 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         #endregion
 
         #region Create Payment Master
-        public async Task<string> HandleCreatePaymentMaster(JObject requestJson)
+        public async Task<JObject> HandleCreatePaymentMaster(JObject requestJson)
         {
-            return "";
+            
+
+            XmlDocument document = new XmlDocument();
+            document.Load("nlog.config");
+            var _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+
+            _logger.Info("\r\n");
+            _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
+            _logger.Info("\r\n");
+            _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Create Vendor ");
+            _logger.Info("\r\n");
+            _logger.Info("Request");
+            //log input recieved from DC Claims
+            _logger.Info(requestJson.Root);
+            JObject json = new JObject();
+
+
+            json = JObject.Parse(requestJson.Root.ToString());
+            return json;
         }
         #endregion
 
