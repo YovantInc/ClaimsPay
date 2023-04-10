@@ -32,7 +32,7 @@ namespace ClaimsPay.Modules.OneInc
                 var requestJson = await body.ReadToEndAsync();
                 JObject objRequest = JObject.Parse(requestJson);
 
-                var result = objClaimsPayDataHandler.HandleCreatePaymentMaster(objRequest);
+                var result = objClaimsPayDataHandler.ClaimsPayDataHandlerCreatePaymentMaster(objRequest);
                
                 JObject objResponse = JObject.Parse(result.Result.ToString());
 
@@ -122,9 +122,13 @@ namespace ClaimsPay.Modules.OneInc
             #region Webhook
             endpoints.MapPost("webhook", async Task<JObject> (HttpRequest request) => {
                 var body = new StreamReader(request.Body);
-                var requestJson = await body.ReadToEndAsync();
+                var requestJson = await body.ReadToEndAsync(); 
 
-                var objResponse = JObject.Parse("{\r\n\t\"Status\": \"Success\",\r\n\t\"Message\": \"Endpoint Hit Successfully\"\r\n}");
+                JObject objRequest = JObject.Parse(requestJson);
+                var result = objClaimsPayDataHandler.ClaimsPayDataHandlerWebhook(objRequest);
+
+                JObject objResponse = JObject.Parse(result.Result.ToString());
+                objResponse = JObject.Parse("{\r\n\t\"Status\": \"Success\",\r\n\t\"Message\": \"Endpoint Hit Successfully\"\r\n}");
                 return objResponse;
             })
             .AddEndpointFilter<ClaimsPayFilter>()

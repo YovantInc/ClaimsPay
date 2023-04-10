@@ -1,0 +1,77 @@
+
+
+-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------
+
+
+06-04-2023 13:01 INFO Initiated Create Vendor 
+
+
+Request
+{
+  "str_json": {
+    "BUS_BusinessId": "",
+    "BUS_City": "Simi Valley",
+    "BUS_Country": "USA",
+    "BUS_EmailAddress": "insurpay.inbound.v2@gmail.com",
+    "BUS_Fax": "8884875890",
+    "BUS_Name": "Auto Rental Ltd",
+    "BUS_OfficePhone": "8884875890",
+    "BUS_State": "CA",
+    "BUS_Street": "P O Box 1257, Siachin",
+    "BUS_SubType": "Company",
+    "BUS_TIN": "874-01-1118",
+    "BUS_TINType": "TIN",
+    "BUS_Type": "Vendor",
+    "BUS_Zipcode": "93063",
+    "CL_CauseofLoss": "Fire",
+    "CL_ClaimNumber": "052017",
+    "CL_DateofLoss": "2014-01-10",
+    "CL_PolicyNumber": "G900785962",
+    "PA_City": "Austin",
+    "PA_Country": "USA",
+    "PA_State": "TX",
+    "PA_Street": "P. O. Box 08302016",
+    "PA_Zipcode": "73013-1234",
+    "PCON_Approval_Reqd": "Y",
+    "PCON_Business": "Y",
+    "PCON_ContactId": "PCON121503",
+    "PCON_EmailAddress": "james@insurpay.com",
+    "PCON_FirstName": "James",
+    "PCON_LastName": "Smith",
+    "PCON_MobilePhone": "8051231234",
+    "PCON_OfficePhone": "",
+    "PM_Additional_Text_1": "Invoice-124555",
+    "PM_Additional_Text_10": "Service End Date",
+    "PM_Additional_Text_2": "Insured Name - James Smith",
+    "PM_Additional_Text_3": "Check Payee Name - James Smith",
+    "PM_Additional_Text_4": "Claimant Name - James Smith",
+    "PM_Additional_Text_5": "Description - Repair Cost",
+    "PM_Additional_Text_6": "Service Start Date",
+    "PM_Additional_Text_9": "To Pay for",
+    "PM_Amount": "724.75",
+    "PM_CarrierId": "3805b2ef-98a5-548c-aa5c-9beb05a1492c",
+    "PM_LoanAccountNumber": "454354534534",
+    "PM_PaymentID": "PMTPMM001PL06666100127012",
+    "PM_PaymentType": "Contact(s)",
+    "PM_RequestReason": "Loss Type Payment",
+    "PM_User_EmailAddress": "john@insurpay.com",
+    "PM_User_FirstName": "John",
+    "PM_User_LastName": "R",
+    "PM_UserId": "user01",
+    "PMA_City": "Simi Valley",
+    "PMA_Country": "USA",
+    "PMA_MailTo": "James Smith",
+    "PMA_State": "TX",
+    "PMA_Street": "09-5A, Woodland Hills",
+    "PMA_Zipcode": "93065-2234",
+    "PMETHOD": "Check",
+    "PMETHOD_Stored": "127b5d22-0cb6-2ac6-1352-5f4f41b349cc",
+    "SCON_Approval_Reqd": "Y",
+    "SCON_ContactId": "SCON121503",
+    "SCON_EmailAddress": "insurpay.inbound.v2@gmail.com",
+    "SCON_FirstName": "Robert",
+    "SCON_LastName": "Smith",
+    "SCON_MobilePhone": "5555551212",
+    "SCON_OfficePhone": ""
+  }
+}

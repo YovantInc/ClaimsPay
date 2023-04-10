@@ -18,6 +18,8 @@ using System.Xml;
 using NLog.Targets;
 using NLog.Config;
 using LogLevel = NLog.LogLevel;
+using static System.Net.Mime.MediaTypeNames;
+using Microsoft.Extensions.Logging;
 
 namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 {
@@ -29,22 +31,89 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         AppHttpClient appHttpClient = new();
         HttpClient objhttpClient = new();
         string baseURL = string.Empty;
-                
+
+
         #endregion
 
-        #region Create Payment Master
-        public async Task<JObject> HandleCreatePaymentMaster(JObject requestJson)
-        {
-            
+        #region Endpoints Methods        
 
-            XmlDocument document = new XmlDocument();
-            document.Load("nlog.config");
-            var _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+        #region Webhook
+        public async Task<JObject> ClaimsPayDataHandlerWebhook(JObject requestJson)
+        {
+            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+
+            var _logger = NLogBuilder.ConfigureNLog(SetNlogConfig(LogPath, "Webhook")).GetCurrentClassLogger();
 
             _logger.Info("\r\n");
             _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
             _logger.Info("\r\n");
-            _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Create Vendor ");
+            _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Webhook ");
+            _logger.Info("\r\n");
+            _logger.Info("Request");
+            //log input recieved from DC Claims
+            _logger.Info(requestJson.Root);
+            JObject json = new JObject();
+
+            try
+            {
+                //Write Logic Here
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+            json = JObject.Parse(requestJson.Root.ToString());
+            return json;
+        }
+        #endregion
+
+        #region Update Profile
+
+        public async Task<JObject> ClaimsPayDataHandlerUpdateProfile(JObject requestJson)
+        {
+            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+
+            var _logger = NLogBuilder.ConfigureNLog(SetNlogConfig(LogPath, "UpdateProfile")).GetCurrentClassLogger();
+
+            _logger.Info("\r\n");
+            _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
+            _logger.Info("\r\n");
+            _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated UpdateProfile");
+            _logger.Info("\r\n");
+            _logger.Info("Request");
+            //log input recieved from DC Claims
+            _logger.Info(requestJson.Root);
+            JObject json = new JObject();
+
+            try
+            {
+                //Write Logic Here
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+            json = JObject.Parse(requestJson.Root.ToString());
+            return json;
+        }
+
+        #endregion
+
+        #region Create Payment Master
+        public async Task<JObject> ClaimsPayDataHandlerCreatePaymentMaster(JObject requestJson)
+        {
+            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = SetNlogConfig(LogPath, "CreatePaymentMaster");
+            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
+
+            _logger.Info("\r\n");
+            _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
+            _logger.Info("\r\n");
+            _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Create Payment Master ");
             _logger.Info("\r\n");
             _logger.Info("Request");
             //log input recieved from DC Claims
@@ -60,9 +129,9 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         #region Create Vendor
         public async Task<JObject> ClaimsPayDataHandlerCreateVendor(JObject objJsonRequest)
         {
-            XmlDocument document = new XmlDocument();
-            document.Load("nlog.config");
-            var _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = SetNlogConfig(LogPath, "CreateVendor");
+            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
 
             _logger.Info("\r\n");
             _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
@@ -70,13 +139,13 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Create Vendor ");
             _logger.Info("\r\n");
             _logger.Info("Request");
-            //log input recieved from DC Claims
+            
             _logger.Info(objJsonRequest.Root);
             JObject json = new JObject();
             try
             {
 
-                //RestData myDeserializedClass = JsonConvert.DeserializeObject<RestData>(request.ToString());
+                
                 RestData objRequestCreateVendor = new RestData();
                 Str_Json objStr_Json = new Str_Json();
                 PartyDetails objPartyDetails = new PartyDetails();
@@ -85,7 +154,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
                 if (!string.IsNullOrEmpty(objJsonRequest["PartyID"].ToString()))
                 {
-                    var result = await GetPartyDetails(objJsonRequest["PartyID"].ToString());
+                    var result = await GetPartyDetails(objJsonRequest["PartyID"].ToString(), config);
                     objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(result.ToString());
 
                     if (objPartyDetails.partyBusinessDetail != null)
@@ -94,7 +163,9 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                         {
                             objStr_Json.BUS_TIN = objPartyDetails.partyBusinessDetail.partyBusiness.registrationID1;
 
-                            string sessionID = await GetSessionID();
+                            string sessionID = await GetSessionID(config);
+
+                           
                             if (sessionID.Length > 0)
                             {
                                 objRequestCreateVendor.session = sessionID;
@@ -147,7 +218,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 _logger.Info("Request");
                                 _logger.Info(strJson);
 
-                                baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
+                                baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"];
                                 string lURL = baseURL + "?method=CreateVendor&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(createVendorPaymentRequest.ToString());
 
                                 var response = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
@@ -167,11 +238,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 //Log error session id not created
                             }
                         }
-                        //else
-                        //{
-                        //    json=JObject.Parse("{\r\n\t\"Status\": \"Failed\",\r\n\t\"Message\": \"Party type is not bussiness\"\r\n}");
-                        //    //return data that party type is not bussiness
-                        //}
+                       
                     }
                     else
                     {
@@ -204,8 +271,10 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             RestData objRequest = new RestData();
             Str_Json objStr_Json = new Str_Json();
 
+            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = SetNlogConfig(LogPath, "GetPaymentStatus");
             JObject response = null;
-            string sessionID = await GetSessionID();
+            string sessionID = await GetSessionID(config);
             if (sessionID.Length > 0)
             {
                 objStr_Json.PM_PaymentID = "08DB0E7AF248CB47";
@@ -236,29 +305,83 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             RestData objRequest = new RestData();
             Str_Json objStr_Json = new Str_Json();
 
+            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = SetNlogConfig(LogPath, "StopPayment");
+
+            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
+
+            _logger.Info("\r\n");
+            _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
+            _logger.Info("\r\n");
+            _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Stop Payment ");
+            _logger.Info("\r\n");
+            _logger.Info("Request");
+            //log input recieved from DC Claims
+            _logger.Info(objJsonRequest.Root);
+
             JObject response = null;
-            string sessionID = await GetSessionID();
-            if (sessionID.Length > 0)
+            try
             {
-                objStr_Json.PM_PaymentID = "PMTPMM001PL06666123";
-                objRequest.session = sessionID;
-                objRequest.str_json = objStr_Json;
+                _logger.Info("\r\n");
+                _logger.Info("Get Session Id Execution Started");
 
-                var opt = new JsonSerializerOptions() { WriteIndented = true };
-                string strJson = System.Text.Json.JsonSerializer.Serialize<RestData>(objRequest, opt);
+             
+                string sessionID = await GetSessionID(config);
 
-                var loginParams = JObject.Parse(strJson);
-                baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
-                string lURL = baseURL + "?method=StopPayment&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(strJson);
+                _logger.Info("\r\n");
+                _logger.Info("Session ID : " + sessionID);
+                _logger.Info("\r\n");
+                _logger.Info("Get Session Id Execution Succefully");
 
-                var result = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
-                response = JObject.Parse(result.Result.ToString());
 
+                if (sessionID.Length > 0)
+                {
+                    objStr_Json.PM_PaymentID = "PMTPMM001PL06666123";
+                    objRequest.session = sessionID;
+                    objRequest.str_json = objStr_Json;
+
+                    var opt = new JsonSerializerOptions() { WriteIndented = true };
+                    string strJson = System.Text.Json.JsonSerializer.Serialize<Str_Json>(objStr_Json, opt);
+                    JObject objStopPaymentRequest = new JObject(
+                                    new JProperty("session", sessionID),
+                                    new JProperty("str_json", strJson));
+
+                    _logger.Info("\r\n");
+                    _logger.Info("Request");
+                    _logger.Info(strJson);
+
+                    baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
+                    string lURL = baseURL + "?method=StopPayment&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(objStopPaymentRequest.ToString());
+
+                    var result = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
+                    response = JObject.Parse(result.Result.ToString());
+
+                    _logger.Info("\r\n");
+                    _logger.Info("Response");
+                    _logger.Info(response.ToString());
+
+                    _logger.Info("\r\n");
+                    _logger.Info("Create Stop Payment Executed Successfully");
+
+                }
+                else
+                {
+                    _logger.Info("\r\n");
+                    _logger.Info("Session id not created");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                response = JObject.Parse("{\"Status\":\"failed\",\"Message\":\"Invalid Session ID\"}");
+                _logger.Info("\r\n");
+                _logger.Info("Stop Payment Execution failed");
+                _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
             }
+            finally
+            {
+                _logger.Info("------------------------------------------------------------------ || Log End || -------------------------------------------------------------------------");
+                NLog.LogManager.Shutdown();
+            }
+
             return response;
         }
         #endregion
@@ -270,9 +393,31 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             RestData objRequest = new RestData();
             Str_Json objStr_Json = new Str_Json();
 
+            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = SetNlogConfig(LogPath, "ResendEmail");
+            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
+
+            _logger.Info("\r\n");
+            _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
+            _logger.Info("\r\n");
+            _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Resend Email ");
+            _logger.Info("\r\n");
+            _logger.Info("Request");
+            //log input recieved from DC Claims
+            _logger.Info(objJsonRequest.Root);
+
             try
             {
-                string sessionID = await GetSessionID();
+                _logger.Info("\r\n");
+                _logger.Info("Get Session Id Execution Started");
+
+                string sessionID = await GetSessionID(config);
+
+                _logger.Info("\r\n");
+                _logger.Info("Session ID : " + sessionID);
+                _logger.Info("\r\n");
+                _logger.Info("Get Session Id Execution Succefully");
+
                 if (sessionID.Length > 0)
                 {
                     objStr_Json.PM_PaymentID = objJsonRequest["PaymentHeaderDTO"]["PaymentID"].ToString();
@@ -280,20 +425,44 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     objRequest.str_json = objStr_Json;
 
                     var opt = new JsonSerializerOptions() { WriteIndented = true };
-                    string strJson = System.Text.Json.JsonSerializer.Serialize<RestData>(objRequest, opt);
+                    string strJson = System.Text.Json.JsonSerializer.Serialize<Str_Json>(objStr_Json, opt);
 
-                    var loginParams = JObject.Parse(strJson);
+                    JObject objResendEmailsRequest = new JObject(
+                                  new JProperty("session", sessionID),
+                                  new JProperty("str_json", strJson.ToString()));
+                    _logger.Info("\r\n");
+                    _logger.Info("Request");
+                    _logger.Info(strJson);
+
                     baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
-                    string lURL = baseURL + "?method=StopPayment&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(strJson);
+                    string lURL = baseURL + "?method=StopPayment&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(objResendEmailsRequest.ToString());
 
                     var result = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
                     response = JObject.Parse(result.Result.ToString());
+
+                    _logger.Info("\r\n");
+                    _logger.Info("Response");
+                    _logger.Info(response);
+
+                    _logger.Info("\r\n");
+                    _logger.Info("Resend Email Executed Successfully");
+                }
+                else
+                {
+                    _logger.Info("\r\n");
+                    _logger.Info("Session id not created");
                 }
             }
             catch (Exception ex)
             {
-
-                throw;
+                _logger.Info("\r\n");
+                _logger.Info("Create Vendor Execution failed");
+                _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
+            }
+            finally
+            {
+                _logger.Info("------------------------------------------------------------------ || Log End || -------------------------------------------------------------------------");
+                NLog.LogManager.Shutdown();
             }
 
             return response;
@@ -303,10 +472,11 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         #endregion
 
         #region Get Session Id
-        public async Task<string> GetSessionID()
+        public async Task<string> GetSessionID(LoggingConfiguration config)
         {
+            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
             JObject json = new JObject();
-            var _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
             try
             {
                 _logger.Info("\r\n");
@@ -366,15 +536,19 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
         #endregion
 
+        #endregion
+
+        #region Other Methods
+
         #region Get Party Details
-        public async Task<string> GetPartyDetails(string partyID)
+        public async Task<string> GetPartyDetails(string partyID, LoggingConfiguration config)
         {
-            var _logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
             try
             {
 
                 _logger.Info("\r\n");
-                
+
                 _logger.Info("\r\n");
                 _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Party Detail ");
                 _logger.Info("");
@@ -439,10 +613,19 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
         #endregion
 
-        #region Logging 
-        public void Logging(string logRequest, string logResponse, string logTime, string logType, string logMessage, string logMethodName, bool logIsError, string logErrorDetails)
+        #region Set Nlog Config 
+        public LoggingConfiguration SetNlogConfig(string logPath, string logName)
         {
-
+            LoggingConfiguration config = new LoggingConfiguration();
+            var consoleTarget = new FileTarget
+            {
+                Name = "logfile",
+                FileName = "" + logPath + "//" + logName + "_" + DateTime.Now.ToString("dd-MM-yyyy") + ".txt",
+                Layout = "${message}"
+            };
+            config.AddRule(LogLevel.Debug, LogLevel.Fatal, consoleTarget, "*");
+            LogManager.Configuration = config;
+            return config;
         }
         #endregion
 
@@ -453,6 +636,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             string value = objStateKeys[key_name].ToString();
             return value;
         }
+
+        #endregion
 
         #endregion
     }
