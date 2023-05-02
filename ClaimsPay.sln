@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClaimsPay", "ClaimsPay\ClaimsPay.csproj", "{9A28CD6F-E56D-41AD-810A-93A4E1B78302}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClaimsPay", "ClaimsPay\ClaimsPay.csproj", "{9A28CD6F-E56D-41AD-810A-93A4E1B78302}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

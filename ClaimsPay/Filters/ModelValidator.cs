@@ -9,17 +9,17 @@ namespace ClaimsPay.Filters
         public ModelValidator()
         {
 
-            RuleFor(x => x.str_json.BUS_BusinessId).NotEmpty().WithMessage("BUS_BusinessId Should not be blank");
-            RuleFor(x => x.str_json.BUS_Type).NotEmpty().WithMessage("BUS_Type Should not be blank");
-            //RuleFor(x => x.BUS_SubType).WithMessage("BUS_Type Should not be blank");
-            RuleFor(x => x.str_json.BUS_Name).NotEmpty().WithMessage("BUS_Name Should not be blank");
-            RuleFor(x => x.str_json.BUS_TIN).NotEmpty().WithMessage("BUS_TIN Should not be blank");
-            RuleFor(x => x.str_json.BUS_Street).NotEmpty().WithMessage("BUS_Street Should not be blank");
-            RuleFor(x => x.str_json.BUS_City).NotEmpty().WithMessage("BUS_City Should not be blank");
-            RuleFor(x => x.str_json.BUS_State).NotEmpty().WithMessage("BUS_State Should not be blank");
-            RuleFor(x => x.str_json.BUS_Zipcode).NotEmpty().WithMessage("BUS_Zipcode Should not be blank");
-            RuleFor(x => x.str_json.BUS_Country).NotEmpty().WithMessage("BUS_Country Should not be blank");
-            RuleFor(x => x.str_json.BUS_Status).NotEmpty().WithMessage("BUS_Status Should not be blank");
+            //RuleFor(x => x.str_json.BUS_BusinessId).NotEmpty().WithMessage("BUS_BusinessId Should not be blank");
+            //RuleFor(x => x.str_json.BUS_Type).NotEmpty().WithMessage("BUS_Type Should not be blank");
+            ////RuleFor(x => x.BUS_SubType).WithMessage("BUS_Type Should not be blank");
+            //RuleFor(x => x.str_json.BUS_Name).NotEmpty().WithMessage("BUS_Name Should not be blank");
+            //RuleFor(x => x.str_json.BUS_TIN).NotEmpty().WithMessage("BUS_TIN Should not be blank");
+            //RuleFor(x => x.str_json.BUS_Street).NotEmpty().WithMessage("BUS_Street Should not be blank");
+            //RuleFor(x => x.str_json.BUS_City).NotEmpty().WithMessage("BUS_City Should not be blank");
+            //RuleFor(x => x.str_json.BUS_State).NotEmpty().WithMessage("BUS_State Should not be blank");
+            //RuleFor(x => x.str_json.BUS_Zipcode).NotEmpty().WithMessage("BUS_Zipcode Should not be blank");
+            //RuleFor(x => x.str_json.BUS_Country).NotEmpty().WithMessage("BUS_Country Should not be blank");
+            //RuleFor(x => x.str_json.BUS_Status).NotEmpty().WithMessage("BUS_Status Should not be blank");
 
 
 

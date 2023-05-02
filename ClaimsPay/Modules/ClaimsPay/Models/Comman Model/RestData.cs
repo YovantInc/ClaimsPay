@@ -49,7 +49,7 @@
         public string? PM_Additional_Text_5 { get; set; }
         public string? PM_Additional_Text_6 { get; set; }
         public string? PM_Additional_Text_9 { get; set; }
-        public string? PM_Amount { get; set; }
+        public double? PM_Amount { get; set; }
         public string? PM_CarrierId { get; set; }
         public string? PM_LoanAccountNumber { get; set; }
         public string? PM_PaymentID { get; set; }

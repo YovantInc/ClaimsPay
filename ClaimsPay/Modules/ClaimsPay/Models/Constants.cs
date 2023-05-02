@@ -1,99 +1,107 @@
-﻿namespace ClaimsPay.Modules.ClaimsPay.Models
+﻿using System.Security.Principal;
+
+namespace ClaimsPay.Modules.ClaimsPay.Models
 {
     public class Constants
     {
+        //Constants for Ref
+        public static string BUS_TINType = "TIN";
+        public static string BUS_Type = "Vendor";
+        public static string BUS_Status = "Active";
+        public static string PartyType = "BUS";
+
+        //Payment Methods
+        public const string C_KEY_Mail_Prepaid_Card = "2d0b9";
+        public const string C_KEY_Virtual_Card = "380e3";
+        public const string C_KEY_Debit_Card = "4c227";
+        public const string C_KEY_Field_Payment = "54ee6";
+        public const string C_KEY_Check = "6755e";
+        public const string C_KEY_Direct_Deposit = "967b9";
+        public const string C_KEY_Instant_Prepaid_Card = "a4959";
+        public const string C_KEY_Let_Customer_Pickup = "b3146";
+        public const string C_KEY_Prepaid_Card = "e3c11";
+
+
+        //Claimspay Type
+        public const string C_KEY_Contacts = "00180";
+        public const string C_KEY_Other = "08b32";
+        public const string C_KEY_Vendor = "22c81";
+        public const string C_KEY_Lienholder = "9c581";
+        public const string C_KEY_Contacts_and_Vendor = "c04bd";
+        public const string C_KEY_Contacts_and_Mortgagee = "e1e44";
+
+
+        //Request Type
+        public const string C_KEY_Recoverable_Depreciation = "0daa5";
+        public const string C_KEY_Emergency_Funds = "b3893";
+        public const string C_KEY_Loss_Payment = "b6cbb";
+        public const string C_KEY_Supplemental_Payment = "c52fc";
+
+
+        //DataItem
+        public const string DATAITEM_PM_Selection = "DI08ae41df43940a1a5130cc4cdd944e";
+        public const string DATAITEM_ClaimsPayCheckMemo = "DI0df942bd6184426bf47fce10af48ef";
+        public const string DATAITEM_ClaimsPayRequestType = "DI147b9c1c5a743b5b03fea857d34127";
+        public const string DATAITEM_PM_IP_PaymentID = "DI1bbf82ad9c84ca793023bae087511b";
+        public const string DATAITEM_Proxy_Number = "DI21b0d0c2d13411eb3ad7faef1d26b0";
+        public const string DATAITEM_PM_RejectReason = "DI23018ab44df4272898a1fb23416fae";
+        public const string DATAITEM_ClaimsPayType = "DI241c58c6c0b4c6c9d1ada23b82f08a";
+        public const string DATAITEM_PM_MailTrackingNumber = "DI247267f97734d61b671ad3434e388b";
+        public const string DATAITEM_PM_Monitored = "DI25a0655e7214369ad5620df3c6585d";
+        public const string DATAITEM_LoanAccountNumber = "DI406304e430e46aa9292107be7cb0c2";
+        public const string DATAITEM_ClaimsPayMethod = "DI4192eb1d86243a7b6a1f6f0b96e468";
+        public const string DATAITEM_PM_Method_Last4Digit = "DI5b322eb0f034ac295cb42b04ebb0de";
+        public const string DATAITEM_PM_Funded = "DI5c9cad420d94a7686c21bd41c31d71";
+        public const string DATAITEM_PM_Orig_Method = "DI5fdf982e202463bbf3c426d1e70dab";
+        public const string DATAITEM_PM_ClearedDate = "DI7cb3023dc804c01a461712f33686dd";
+        public const string DATAITEM_ApprovalRequired = "DI80006fd2a054f65ae9870cf0c3f048";
+        public const string DATAITEM_PM_ErrorMessage = "DI88b08ff4d194b45ba7237be7030236";
+        public const string DATAITEM_PM_PaidDate = "DI8f60b983c7d497c88f0560617f04f3";
+        public const string DATAITEM_PM_RejectPayeeID = "DI9279277e1e54fedb7ef7254d4a6a68";
+        public const string DATAITEM_Expedite = "DIb313d485ad54b59be91063cb676973";
+        public const string DATAITEM_PrintNow = "DIbe838441b8d4f6dbbbb9a129d95470";
+        public const string DATAITEM_PM_Status = "DIbfbca1a4f40470196c2a05f3b272f5";
+        public const string DATAITEM_PM_EscheatDate = "DId02749dd9644b39ad1bedcc915a967";
+        public const string DATAITEM_PM_ErrorCode = "DIe318c50aec0436898306eb1acbb381";
+        public const string DATAITEM_Certified = "DIf8be4dc9a9440449fab10964ca0d4c";
+
+
+
+        //DATAITEM_FQN
+        public const string DATAITEM_FQN_PM_Selection = "PaymentCstm.DI08ae41df43940a1a5130cc4cdd944e";
+        public const string DATAITEM_FQN_ClaimsPayCheckMemo = "PaymentCstm.DI0df942bd6184426bf47fce10af48ef";
+        public const string DATAITEM_FQN_ClaimsPayRequestType = "PaymentCstm.DI147b9c1c5a743b5b03fea857d34127";
+        public const string DATAITEM_FQN_IP_PaymentID = "PaymentCstm.DI1bbf82ad9c84ca793023bae087511b";
+        public const string DATAITEM_FQN_Proxy_Number = "PaymentCstm.DI21b0d0c2d13411eb3ad7faef1d26b0";
+        public const string DATAITEM_FQN_PM_RejectReason = "PaymentCstm.DI23018ab44df4272898a1fb23416fae";
+        public const string DATAITEM_FQN_ClaimsPayType = "PaymentCstm.DI241c58c6c0b4c6c9d1ada23b82f08a";
+        public const string DATAITEM_FQN_PM_MailTrackingNumber = "PaymentCstm.DI247267f97734d61b671ad3434e388b";
+        public const string DATAITEM_FQN_PM_Monitored = "PaymentCstm.DI25a0655e7214369ad5620df3c6585d";
+        public const string DATAITEM_FQN_LoanAccountNumber = "PaymentCstm.DI406304e430e46aa9292107be7cb0c2";
+        public const string DATAITEM_FQN_ClaimsPayMethod = "PaymentCstm.DI4192eb1d86243a7b6a1f6f0b96e468";
+        public const string DATAITEM_FQN_PM_Method_Last4Digit = "PaymentCstm.DI5b322eb0f034ac295cb42b04ebb0de";
+        public const string DATAITEM_FQN_PM_Funded = "PaymentCstm.DI5c9cad420d94a7686c21bd41c31d71";
+        public const string DATAITEM_FQN_PM_Orig_Method = "PaymentCstm.DI5fdf982e202463bbf3c426d1e70dab";
+        public const string DATAITEM_FQN_PM_ClearedDate = "PaymentCstm.DI7cb3023dc804c01a461712f33686dd";
+        public const string DATAITEM_FQN_ApprovalRequired = "PaymentCstm.DI80006fd2a054f65ae9870cf0c3f048";
+        public const string DATAITEM_FQN_PM_ErrorMessage = "PaymentCstm.DI88b08ff4d194b45ba7237be7030236";
+        public const string DATAITEM_FQN_PM_PaidDate = "PaymentCstm.DI8f60b983c7d497c88f0560617f04f3";
+        public const string DATAITEM_FQN_PM_RejectPayeeID = "PaymentCstm.DI9279277e1e54fedb7ef7254d4a6a68";
+        public const string DATAITEM_FQN_Expedite = "PaymentCstm.DIb313d485ad54b59be91063cb676973";
+        public const string DATAITEM_FQN_PrintNow = "PaymentCstm.DIbe838441b8d4f6dbbbb9a129d95470";
+        public const string DATAITEM_FQN_PM_Status = "PaymentCstm.DIbfbca1a4f40470196c2a05f3b272f5";
+        public const string DATAITEM_FQN_PM_EscheatDate = "PaymentCstm.DId02749dd9644b39ad1bedcc915a967";
+        public const string DATAITEM_FQN_PM_ErrorCode = "PaymentCstm.DIe318c50aec0436898306eb1acbb381";
+        public const string DATAITEM_FQN_Certified = "PaymentCstm.DIf8be4dc9a9440449fab10964ca0d4c";
+
+
         public const string EventUnableToStopPayment = "IP_UnableToStopPayment";
         public const string EventUnableToCorrectPayment = "IP_UnableToCorrectPayment";
         public const string EventSendPayment = "IP_SendPayment";
         public const string EventStopVoid = "IP_StopVoidPayment";
         public const string EventSendUpdate = "IP_SendUpdate";
 
-        public const string ErrorUnableToStopPayment = "IP_ErrorUnableToStopPayment";
-        public const string ErrorUnableToCorrectPayment = "IP_ErrorUnableToCorrectPayment";
-        public const string ErrorNoPhone = "IP_NoPhone";
-        public const string ErrorNoEmail = "IP_NoEmail";
-        public const string ErrorVendorPaymentMethod = "IP_VendorPaymentMethod";
-        public const string ErrorContactsNotPerson = "IP_ContactsNotPerson";
-        public const string ErrorNotCompanyVendor = "IP_NotCompanyVendor";
-        public const string ErrorNotEnabledForInsurPay = "IP_NotEnabledForInsurPay";
-        public const string ErrorNotLienholder = "IP_NotLienholder";
-        public const string ErrorLienholderPaymentMethod = "IP_LienholderPaymentMethod";
-        public const string ErrorAdjusterEmail = "IP_AdjusterEmail";
-        public const string ErrorStoredMethodNotUsed = "IP_StoredMethodNotUsed";
-        public const string ErrorAddress = "IP_Address";
-        public const string ErrorInvoiceNumber = "IP_InvoiceNumber";
-        public const string ErrorContactAndVendorPayee = "IP_ContactAndVendorPayee";
-        public const string ErrorContactAndMortgageeRole = "IP_ContactAndMortgageeRole";
-        public const string ErrorContactAndMortgageePayee = "IP_ContactAndMortgageePayee";
-        public const string ErrorContactAndMortgageeNumIndPayee = "IP_ContactAndMortgageeNumIndPayee";
-        public const string ErrorNotBusinessBulkPayment = "IP_NotBusinessBulkPayment";
-
-        public const string DataItem_ClaimsPayType = "DIfe75453702d40bd9b907438a720400";
-        public const string Category_ClaimsPayType = "fa5a4d381b44fdf818fb856531543e";
-        public const string DataItem_ClaimsPayMethod = "DI6b3b0d6709e406f832c7100a51c798";
-        public const string Category_ClaimsPayMethod = "f8951e7bf2c4a6b9e04cdb7cd2a144";
-        public const string DataItem_ClaimsPayCheckStatus = "DI6d79718b02746368e5ce487ae73ce4";
-        public const string DataItem_ClaimsPayTrackingNumber = "DI23fec276ddc444793634b4b152b13e";
-        public const string DataItem_ClaimsPayPaymentMethodId = "DId0a03e3d3d241418c6e69c54840126";
-        public const string DataItem_ClaimsPayLoanAccountNumber = "DI005be6c61024cb3ba27e5e4e92f8cf";
-        public const string DataItem_ClaimsPayICProxyNumber = "DI6b2b37594334c7eb98273135138a38";
-        public const string DataItem_ClaimsPayDCExpYear = "DIb631051b90e4cb6bdcfe834ee8d321";
-        public const string DataItem_ClaimsPayDCExpMonth = "DIc97a316a50e49efbc057689e814024";
-        public const string DataItem_ClaimsPayDCCardNumber = "DI447fca8f0164db69f31207022bdd24";
-        public const string DataItem_ClaimsPayAcctNumLast4 = "DI81fffbe795a49e490e6e5d168d4457";
-        public const string DataItem_ClaimsPayComments = "DI6201b58d4ec4e85a3fd8c0879caf53";
-        public const string DataItem_ClaimsPayCheckMemo = "DIa5812086384466ca9adc1e29b7aa3b";
-        public const string DataItem_ClaimsPayApprovalRequired = "DI3f3e19dd01a4522a5b6695c74c0ceb";
-        public const string DataItem_ClaimsPayPaymentReason = "DIe2341cefef643b98ab1c4c99d636e9";
-        public const string DataItem_ClaimsPayRequestType = "DI8a2976a16cf4b198ac716957528fd9";
-        public const string DataItem_ClaimsPayBulkPayment = "DIca9740c09ac49829278e5444b6ff78";
-
-        public const string C_Key_Prepaid_Card = "c1eb6";
-        public const string C_Key_Instant_Prepaid_Card = "9b442";
-        public const string C_Key_Direct_Deposit = "d2a28";
-        public const string C_Key_Debit_Card = "e586a";
-        public const string C_Key_Virtual_Card = "a74fc";
-        public const string C_Key_Total_Loss = "0015b";
-        public const string C_Key_Check = "ef5cd";
-        public const string C_Key_Field_Payment = "6eded";
-        public const string C_Key_Let_Customer_Pickup = "14d9b";
-        public const string C_Key_Contact = "b557c";
-        public const string C_Key_Vendor = "4cc75";
-        public const string C_Key_Lienholder = "16e12";
-        public const string C_Key_Other = "c47f2";
-        public const string C_Key_ContactAndMortgagee = "a1694";
-        public const string C_Key_ContactAndVendor = "6777b";
-        public const string C_Key_Role_Lienholder = "fc0e4";
-        public const string C_Key_Role_Mortgagee = "MTGE";
-        public const string C_Key_PhoneType_Business_Fax = "10";
-        public const string C_Key_PhoneType_Home_Fax = "11";
-
-        public const string C_Key_Loss_Payment = "0a3e1";
-        public const string C_Key_Supplemental_Payment = "0870d";
-        public const string C_Key_Recoverable_Depreciation = "5d6e0";
-        public const string T_VAL_Loss_Payment = "Loss Payment";
-        public const string T_VAL_Supplemental_Payment = "Supplemental Payment";
-        public const string T_VAL_Recoverable_Depreciation = "Recoverable Depreciation";
-
-        public static string Status_New = "NEW";
-        public static string Status_DoneNoItems = "DONE0";
-        public static string Status_Done = "DONE";
-        public static string Status_NoClaim = "NOCLM";
-        public static string BUS_TINType = "TIN";
-        public static string BUS_Type = "Vendor";
-        public static string BUS_Status = "Active";
-        public static string PartyType = "BUS";
-
-        public static string EventProcessBatchItem = "IP_ProcessItem";
-        public static string EventProcessBulkBatch = "IPB_ProcessBatch";
-        public static string EventProcessBatch = "IP_ProcessBatch";
-        public static string BatchEntityID = "INSURPAY";
-        public static string DummyEntityID = "CLM_NOT_FOUND";
-        public static string SystemUserID = "3C3935991D0CD783";
-
-        public static string RefData_Label_UBASP_FNContinued = "IP_FNContinued";
-        public static string RefData_Label_UBASP_AttachmentName = "IP_AttachmentName";
-        public static string RefData_Label_UBASP_AttachmentDesc = "IP_AttachmentDesc";
+        
     }
 
 }

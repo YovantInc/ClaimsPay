@@ -129,7 +129,6 @@
         public object? registrationID2 { get; set; }
         public object? registrationID3 { get; set; }
     }
-
     public class PartyBusinessDetail
     {
         public Party party { get; set; }
@@ -138,7 +137,7 @@
         public PartyBusiness partyBusiness { get; set; }
         public List<PartyBusNameDetail>  partyBusNameDetail { get; set; }
         public PartyComment partyComment { get; set; }
-        public object? partyEmail { get; set; }
+        public List<PartyEmail> partyEmail { get; set; }
         public object? partyLicense { get; set; }
         public object? partyMembership { get; set; }
         public List<PartyPhone> partyPhone { get; set; }
@@ -209,10 +208,6 @@
         public string? phoneTypeCode { get; set; }
     }
 
-    public class PartyIndividualDetail
-    {
-        public Party party { get; set; }
-    }
     public class PartyDetails
     {
         public bool? isPerformer { get; set; }
@@ -224,6 +219,120 @@
         public bool? canUserViewParty { get; set; }
         public bool? canUserListParty { get; set; }
     }
+
+    public class PartyAgent
+    {
+        public DateTime effectiveDate { get; set; }
+        public DateTime expirationDate { get; set; }
+        public string lastTransactionID { get; set; }
+        public DateTime lastUpdatedDate { get; set; }
+        public string partyID { get; set; }
+        public object producerNumber { get; set; }
+        public object producerSubCode { get; set; }
+        public object specialityType { get; set; }
+    }
+
+    public class PartyEmail
+    {
+        public object comment { get; set; }
+        public DateTime effectiveDate { get; set; }
+        public string emailAddress { get; set; }
+        public string emailTypeCode { get; set; }
+        public DateTime expirationDate { get; set; }
+        public object externalPartyEmailID { get; set; }
+        public bool isPrimary { get; set; }
+        public string lastTransactionID { get; set; }
+        public DateTime lastUpdatedDate { get; set; }
+        public string partyEmailID { get; set; }
+        public string partyID { get; set; }
+    }
+
+    public class PartyIndividual
+    {
+        public DateTime dateOfBirth { get; set; }
+        public object dateOfDeath { get; set; }
+        public DateTime effectiveDate { get; set; }
+        public DateTime expirationDate { get; set; }
+        public string genderCode { get; set; }
+        public bool isAgent { get; set; }
+        public bool isCompanyPersonnel { get; set; }
+        public string lastTransactionID { get; set; }
+        public DateTime lastUpdatedDate { get; set; }
+        public string maritalStatusCode { get; set; }
+        public object nationalID { get; set; }
+        public object numberOfDependents { get; set; }
+        public string partyID { get; set; }
+        public string preferredContactType { get; set; }
+        public string preferredLanguage { get; set; }
+        public string professionCode { get; set; }
+        public object specificPurposeID { get; set; }
+        public bool isSupplier { get; set; }
+    }
+
+    public class PartyIndividualDetail
+    {
+        public Party party { get; set; }
+        public List<PartyAddressDetail> partyAddressDetail { get; set; }
+        public PartyAgent partyAgent { get; set; }
+        public PartyComment partyComment { get; set; }
+        public List<PartyEmail> partyEmail { get; set; }
+        public PartyIndividual partyIndividual { get; set; }
+        public PartyIndividualDriverLicense partyIndividualDriverLicense { get; set; }
+        public List<PartyIndNameDetail> partyIndNameDetail { get; set; }
+        public object partyLicense { get; set; }
+        public object partyMembership { get; set; }
+        public List<PartyPhone> partyPhone { get; set; }
+        public object partyRelation { get; set; }
+    }
+
+    public class PartyIndividualDriverLicense
+    {
+        public DateTime effectiveDate { get; set; }
+        public DateTime expirationDate { get; set; }
+        public object expirationLicenseDate { get; set; }
+        public object lastTransactionID { get; set; }
+        public DateTime lastUpdatedDate { get; set; }
+        public object partyID { get; set; }
+        public object partyLicenseCountry { get; set; }
+        public object partyLicenseID { get; set; }
+        public object partyLicenseIss { get; set; }
+        public object partyLicenseNumber { get; set; }
+        public object partyLicensePlcIss { get; set; }
+        public object partyLicenseStatus { get; set; }
+    }
+
+    public class PartyIndName
+    {
+        public object comment { get; set; }
+        public string firstName { get; set; }
+        public object firstNamePhonetic { get; set; }
+        public string firstNameSoundex { get; set; }
+        public string firstNameUpperCase { get; set; }
+        public string fullName { get; set; }
+        public string lastName { get; set; }
+        public object lastNamePhonetic { get; set; }
+        public string lastNameSoundex { get; set; }
+        public string lastNameUpperCase { get; set; }
+        public string lastTransactionID { get; set; }
+        public DateTime lastUpdatedDate { get; set; }
+        public object middleName { get; set; }
+        public object middleNamePhonetic { get; set; }
+        public object middleNameSoundex { get; set; }
+        public object middleNameUpperCase { get; set; }
+        public string nameTypeCode { get; set; }
+        public string partyIndNameID { get; set; }
+        public object prefixCode { get; set; }
+        public object suffixCode { get; set; }
+    }
+
+    public class PartyIndNameDetail
+    {
+        public PartyIndName partyIndName { get; set; }
+        public PartyName partyName { get; set; }
+    }
+
+  
+
 
 
 }
