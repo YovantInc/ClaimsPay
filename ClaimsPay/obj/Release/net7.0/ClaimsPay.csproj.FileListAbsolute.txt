@@ -43,3 +43,6 @@ C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\ClaimsPay.pd
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\ClaimsPay.genruntimeconfig.cache
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\ref\ClaimsPay.dll
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Release\net7.0\Shared\CountryKeys.json
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Release\net7.0\Content\PartiipantRole.json
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Release\net7.0\Shared\CauseOfLoss.json
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Release\net7.0\Shared\ParticipantRole.json

@@ -44,38 +44,6 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
         #region Endpoints Methods        
 
-        #region Webhook
-        public async Task<JObject> ClaimsPayDataHandlerWebhook(JObject requestJson)
-        {
-            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
-            var config = SetNlogConfig(LogPath, "Webhook");
-            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
-
-            _logger.Info("\r\n");
-            _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
-            _logger.Info("\r\n");
-            _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Webhook ");
-            _logger.Info("\r\n");
-            _logger.Info("Request");
-            //log input recieved from DC Claims
-            _logger.Info(requestJson.Root);
-            JObject json = new JObject();
-
-            try
-            {
-                //Write Logic Here
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-
-            json = JObject.Parse(requestJson.Root.ToString());
-            return json;
-        }
-        #endregion
-
         #region Update Profile
 
         public async Task<JObject> ClaimsPayDataHandlerUpdateProfile(JObject requestJson)
@@ -724,10 +692,10 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         }
         #endregion
 
-        #region WebHook1
-        public async Task<JObject> ClaimsPayDataHandlerWebHook(JObject objJsonRequest)
+        #region WebHook
+        public async Task<JsonDocument> ClaimsPayDataHandlerWebHook(JObject objJsonRequest)
         {
-            JObject response = null;
+            JsonDocument response = null;
             RestData objRequest = new RestData();
             Str_Json objStr_Json = new Str_Json();
 
@@ -738,7 +706,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             _logger.Info("\r\n");
             _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
             _logger.Info("\r\n");
-            _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Resend Email ");
+            _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated WebHook ");
             _logger.Info("\r\n");
             _logger.Info("Request");
             //log input recieved from DC Claims
@@ -746,15 +714,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
             try
             {
-                _logger.Info("\r\n");
-                _logger.Info("Get Session Id Execution Started");
-
-                string sessionID = await GetSessionID(config);
-
-                _logger.Info("\r\n");
-                _logger.Info("Session ID : " + sessionID);
-                _logger.Info("\r\n");
-                _logger.Info("Get Session Id Execution Succefully");
+                
 
                 var responsePaymentHeader = await GetPaymentHeaderDetails(objJsonRequest["PM_CR_PaymentID"].ToString(), config);
                 JObject objreq = JObject.Parse(responsePaymentHeader.ToString());
@@ -808,7 +768,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 var PM_ErrorMessage = columArray.Select((x, index) => new { Name = x.Value<string>("name"), Node = x, Index = index })
                                         .Single(x => x.Name == Constants.DATAITEM_FQN_PM_ErrorMessage)
                                         .Index;
-               
+
                 foreach (var obj in jObjects)
                 {
                     //For PM_Method_Last4Digit
@@ -1077,8 +1037,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                         }
                     }
 
-                    
-                    
+
+
                 }
 
 
@@ -1092,51 +1052,51 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 updatedJson["name"] = outputArray;
                 objreq["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].Replace(updatedJson);
 
-               
+
 
                 string temp = objreq.ToString();
-                var finaljson = JObject.Parse(colObj.ToString());
 
+                string baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
+                string URI = baseURI + "/v3/paymentheader";
 
-                if (sessionID.Length > 0)
+                _logger.Info("\r\n");
+                _logger.Info("Request URI");
+                _logger.Info(URI);
+
+                _logger.Info("\r\n");
+                _logger.Info("Request");
+                _logger.Info(objreq.ToString());
+
+                objhttpClient.DefaultRequestHeaders.Clear();
+                objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
+                objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
+
+                var content = JObject.Parse(objreq.ToString());
+                var stringContent = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
+
+                var responsePutPaymentHeader = await objhttpClient.PutAsync(URI,stringContent);
+                var result = responsePutPaymentHeader.Content.ReadAsStringAsync();
+                if (responsePutPaymentHeader.IsSuccessStatusCode)
                 {
-                    objStr_Json.PM_PaymentID = objJsonRequest["PaymentHeaderDTO"]["PaymentID"].ToString();
-                    objRequest.session = sessionID;
-                    objRequest.str_json = objStr_Json;
-
-                    var opt = new JsonSerializerOptions() { WriteIndented = true };
-                    string strJson = System.Text.Json.JsonSerializer.Serialize<Str_Json>(objStr_Json, opt);
-
-                    //JObject objResendEmailsRequest = new JObject(
-                    //              new JProperty("session", sessionID),
-                    //              new JProperty("str_json", strJson.ToString()));
-                    //_logger.Info("\r\n");
-                    //_logger.Info("Request");
-                    //_logger.Info(strJson);
-
-                    //baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
-                    //string lURL = baseURL + "?method=StopPayment&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(objResendEmailsRequest.ToString());
-
-                    //var result = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
-                    //response = JObject.Parse(result.Result.ToString());
-
-                    _logger.Info("\r\n");
-                    _logger.Info("Response");
-                    _logger.Info("");
-
-                    _logger.Info("\r\n");
-                    _logger.Info("Resend Email Executed Successfully");
+                    response = JsonDocument.Parse("{\n  \"PM_IP_PaymentID\": \"" + objJsonRequest["PM_IP_PaymentID"] +"\",\n  \"Status\": \"Success\"\n}");
                 }
                 else
                 {
-                    _logger.Info("\r\n");
-                    _logger.Info("Session id not created");
+                    response = JsonDocument.Parse(result.ToString());
                 }
+                _logger.Info("\r\n");
+                _logger.Info("Response");
+                _logger.Info(response.RootElement.ToString());
+
+
+                _logger.Info("\r\n");
+                _logger.Info("Webhook Executed Successfully");
+
             }
             catch (Exception ex)
             {
                 _logger.Info("\r\n");
-                _logger.Info("Create Vendor Execution failed");
+                _logger.Info("Webhook Execution failed");
                 _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
             }
             finally
@@ -1544,7 +1504,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 _logger.Info("\r\n");
 
                 _logger.Info("\r\n");
-                _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Party Detail ");
+                _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Payment Header Details ");
                 _logger.Info("");
 
                 string baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
@@ -1565,14 +1525,14 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
                 return result.ToString();
                 _logger.Info("\r\n");
-                _logger.Info("Party Details Executed Successfully");
+                _logger.Info("Get Payment Header Details Executed Successfully");
             }
 
             catch (Exception ex)
             {
 
                 _logger.Info("\r\n");
-                _logger.Info("Party Detail Execution failed");
+                _logger.Info("Get Payment Header Details Execution failed");
                 _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
 
             }

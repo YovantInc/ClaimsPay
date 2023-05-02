@@ -3,8 +3,12 @@ C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\n
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\appsettings.Development.json
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\appsettings.json
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\Content\CountryKeys.json
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\Content\PartiipantRole.json
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\Content\StateKeys.json
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\libman.json
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\Shared\CauseOfLoss.json
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\Shared\CountryKeys.json
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\Shared\ParticipantRole.json
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\Shared\StateKeys.json
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\ClaimsPay.dll
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Release\net7.0\PubTmp\Out\ClaimsPay.deps.json

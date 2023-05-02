@@ -38,9 +38,6 @@ namespace ClaimsPay.Modules.OneInc
                 JObject objRequest = JObject.Parse(requestJson);
 
                 var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerCreatePaymentMaster(objRequest);
-
-                var objResponse = JObject.Parse("{\"Status\":\"Success\"}");
-                //var temp =JsonValue.Parse("{\"Status\":\"Success\"}");
                JsonDocument oobjjson =JsonDocument.Parse(result.ToString());
 
 
@@ -128,17 +125,17 @@ namespace ClaimsPay.Modules.OneInc
             #endregion
 
             #region Webhook
-            endpoints.MapPost("webhook", async Task<JObject> (HttpRequest request) => {
+            endpoints.MapPost("webhook", async Task<JsonDocument> (HttpRequest request) => {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
 
-                
+
 
                 JObject objRequest = JObject.Parse(requestJson);
-                var result = objClaimsPayDataHandler.ClaimsPayDataHandlerWebHook(objRequest);
+                var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerWebHook(objRequest);
 
-                JObject objResponse = JObject.Parse(result.ToString());
-                objResponse = JObject.Parse("{\r\n\t\"Status\": \"Success\",\r\n\t\"Message\": \"Endpoint Hit Successfully\"\r\n}");
+                JsonDocument objResponse = JsonDocument.Parse(result.RootElement.ToString());
+                //objResponse = JObject.Parse("{\r\n\t\"Status\": \"Success\",\r\n\t\"Message\": \"Endpoint Hit Successfully\"\r\n}");
                 return objResponse;
             })
             .AddEndpointFilter<ClaimsPayFilter>()
