@@ -9,10 +9,10 @@ namespace ClaimsPay.Filters
     public abstract class AuthenticationFilter : IEndpointFilter
     {
         protected readonly Microsoft.Extensions.Logging.ILogger Logger;
-        private readonly string _methodName;
-        private readonly string _filterType;
-        public static IConfiguration configuration;
-        private readonly IConfiguration _configuration;
+        private readonly string? _methodName;
+        private readonly string? _filterType;
+        public static IConfiguration? configuration;
+        private readonly IConfiguration? _configuration;
         
         public AuthenticationFilter(IConfiguration configuration)
         {

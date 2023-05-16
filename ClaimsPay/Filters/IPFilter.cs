@@ -21,7 +21,7 @@ namespace ClaimsPay.Filters
         {
             var remoteIp = context.HttpContext.Connection.RemoteIpAddress ?? new IPAddress(new byte[0]);
             Logger.LogInformation("Remote IpAddress: {RemoteIp}", remoteIp);
-            bool isIPFilter=Convert.ToBoolean(AppConfig.configuration?.GetSection($"Modules:SystemConfig")["IPFilterIsOn"].ToString());
+            bool isIPFilter=Convert.ToBoolean(AppConfig.configuration.GetSection($"Modules:SystemConfig")["IPFilterIsOn"].ToString());
             var ipFilterValues = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["IPFilter"]?.Split(';') ?? Array.Empty<string>();
 
             var badIp = true;

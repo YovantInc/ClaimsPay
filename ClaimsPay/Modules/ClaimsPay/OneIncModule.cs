@@ -25,7 +25,7 @@ namespace ClaimsPay.Modules.OneInc
         {
             return services;
         }
-        
+
         public IEndpointRouteBuilder MapEndpoints(IEndpointRouteBuilder endpoints)
         {
 
@@ -38,10 +38,10 @@ namespace ClaimsPay.Modules.OneInc
                 JObject objRequest = JObject.Parse(requestJson);
 
                 var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerCreatePaymentMaster(objRequest);
-               JsonDocument oobjjson =JsonDocument.Parse(result.ToString());
+                JsonDocument oobjjson = JsonDocument.Parse(result.ToString());
 
 
-                 return await Task.FromResult(oobjjson);
+                return await Task.FromResult(oobjjson);
             }).AddEndpointFilter<ClaimsPayFilter>()
               .AddEndpointFilter<ClaimsPayIPFilter>();
             #endregion
@@ -55,7 +55,7 @@ namespace ClaimsPay.Modules.OneInc
                 var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerCreateVendor(objRequest);
 
                 string objResponse = string.Empty;
-                
+
                 JObject jobj = JObject.Parse(result.ToString());
 
                 return await Task.FromResult(jobj);
@@ -64,14 +64,15 @@ namespace ClaimsPay.Modules.OneInc
             #endregion
 
             #region Stop Payment
-            endpoints.MapPost("stopPayment", async Task<JObject> (HttpRequest request) => {
+            endpoints.MapPost("stopPayment", async Task<JsonDocument> (HttpRequest request) =>
+            {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
                 JObject objRequest = JObject.Parse(requestJson);
 
 
                 var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerStopPayment(objRequest);
-                var objrespons = JObject.Parse(result.ToString());
+                var objrespons = JsonDocument.Parse(result.ToString());
                 return objrespons;
                 //return "{\r\n\t\"Status\": \"Success\",\r\n\t\"Message\": \"Endpoint Hit Successfully\"\r\n}";
             })
@@ -81,11 +82,12 @@ namespace ClaimsPay.Modules.OneInc
             #endregion
 
             #region Get Payment Status
-            endpoints.MapPost("getPaymentStatus", async Task<string> (HttpRequest request) => {
+            endpoints.MapPost("getPaymentStatus", async Task<string> (HttpRequest request) =>
+            {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
                 JObject objRequest = JObject.Parse(requestJson);
-              
+
 
                 var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerGetPaymentStatus(objRequest);
                 return result.ToString();
@@ -98,11 +100,12 @@ namespace ClaimsPay.Modules.OneInc
             #endregion
 
             #region Update Profile
-            endpoints.MapPost("updateProfile", async Task<JObject> (HttpRequest request) => {
+            endpoints.MapPost("updateProfile", async Task<JObject> (HttpRequest request) =>
+            {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
 
-                var objResponse=JObject.Parse("{\r\n\t\"Status\": \"Success\",\r\n\t\"Message\": \"Endpoint Hit Successfully\"\r\n}");
+                var objResponse = JObject.Parse("{\r\n\t\"Status\": \"Success\",\r\n\t\"Message\": \"Endpoint Hit Successfully\"\r\n}");
                 return objResponse;
             })
             .AddEndpointFilter<ClaimsPayFilter>()
@@ -111,7 +114,8 @@ namespace ClaimsPay.Modules.OneInc
             #endregion
 
             #region Resend Email
-            endpoints.MapPost("resendEmail", async Task<JObject> (HttpRequest request) => {
+            endpoints.MapPost("resendEmail", async Task<JObject> (HttpRequest request) =>
+            {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
                 JObject objRequest = JObject.Parse(requestJson);
@@ -125,16 +129,40 @@ namespace ClaimsPay.Modules.OneInc
             #endregion
 
             #region Webhook
-            endpoints.MapPost("webhook", async Task<JsonDocument> (HttpRequest request) => {
+            endpoints.MapPost("webhook", async Task<JsonDocument> (HttpRequest request) =>
+            {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
 
+                var authHeader = request.Headers["Authorization"].ToString();
+                var token = authHeader.Substring("Basic ".Length).Trim();
+                JsonDocument objResponse = null;
+                System.Console.WriteLine(token);
+                var credentialstring = Encoding.UTF8.GetString(Convert.FromBase64String(token));
+                var credentials = credentialstring.Split(':');
+                string? authKey = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["AuthenticationKey"];
+                string? authPassword = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["AuthenticationPassword"];
+                if (authHeader != null && authHeader.StartsWith("basic", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (credentials[0] == authKey && credentials[1] == authPassword)
+                    {
+
+                        JObject? objRequest = JObject.Parse(requestJson);
+                        var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerWebHook(objRequest);
+                        objResponse = JsonDocument.Parse(result.RootElement.ToString());
+                    }
+                    else
+                    {
+                        objResponse = JsonDocument.Parse("{\r\n\t\"Status\": \"401 Unauthorized\"\r\n}");
+                    }
+                }
+                else
+                {
+                    objResponse = JsonDocument.Parse("{\r\n\t\"Status\": \"401 Unauthorized\"\r\n}");
+                }
 
 
-                JObject objRequest = JObject.Parse(requestJson);
-                var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerWebHook(objRequest);
 
-                JsonDocument objResponse = JsonDocument.Parse(result.RootElement.ToString());
                 //objResponse = JObject.Parse("{\r\n\t\"Status\": \"Success\",\r\n\t\"Message\": \"Endpoint Hit Successfully\"\r\n}");
                 return objResponse;
             })
@@ -144,7 +172,8 @@ namespace ClaimsPay.Modules.OneInc
             #endregion
 
             #region Bulk Payment Master
-            endpoints.MapPost("bulkPaymentMaster", async Task<string> (HttpRequest request) => {
+            endpoints.MapPost("bulkPaymentMaster", async Task<string> (HttpRequest request) =>
+            {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
 
@@ -175,7 +204,7 @@ namespace ClaimsPay.Modules.OneInc
                 //    }
                 //}
                 LoggingConfiguration config = new LoggingConfiguration();
-                string str=await objClaimsPayDataHandler.GetLossDetails("",config);
+                string str;//= await Helpe// GetLossDetails("", config);
 
 
 

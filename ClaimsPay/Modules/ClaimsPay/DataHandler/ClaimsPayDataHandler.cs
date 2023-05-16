@@ -18,7 +18,7 @@ using System.Xml;
 using NLog.Targets;
 using NLog.Config;
 using LogLevel = NLog.LogLevel;
-using static System.Net.Mime.MediaTypeNames;
+
 using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Runtime.InteropServices;
@@ -33,12 +33,13 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
         AppHttpClient appHttpClient = new();
         HttpClient objhttpClient = new();
-        string baseURL = string.Empty;
-        string ClaimsPayType = string.Empty;
-        string ClaimsPayTypeRequest = string.Empty;
-        string LoanAccountNumber = string.Empty;
-        string ClaimsPayMethod = string.Empty;
-        string approvalRequired = string.Empty;
+        Helper helper = new Helper();
+        string? baseURL = string.Empty;
+        string? ClaimsPayType = string.Empty;
+        string? ClaimsPayTypeRequest = string.Empty;
+        string? LoanAccountNumber = string.Empty;
+        string? ClaimsPayMethod = string.Empty;
+        string? approvalRequired = string.Empty;
 
         #endregion
 
@@ -48,8 +49,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
         public async Task<JObject> ClaimsPayDataHandlerUpdateProfile(JObject requestJson)
         {
-            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
-            var config = SetNlogConfig(LogPath, "UpdateProfile");
+            string? LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = helper.SetNlogConfig(LogPath!, "UpdateProfile");
             var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
 
             _logger.Info("\r\n");
@@ -81,15 +82,15 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         #region Create Payment Master
         public async Task<JObject> ClaimsPayDataHandlerCreatePaymentMaster(JObject requestJson)
         {
-            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
-            var config = SetNlogConfig(LogPath, "CreatePaymentMaster");
+            string? LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = helper.SetNlogConfig(LogPath!, "CreatePaymentMaster");
             var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
 
-            RestData objRestData = new RestData();
-            Str_Json objStrJson = new Str_Json();
-            DTOModel objDTOModel = new DTOModel();
-            PartyDetails objPartyDetails = new PartyDetails();
-            JObject json = new JObject();
+            RestData? objRestData = new RestData();
+            Str_Json? objStrJson = new Str_Json();
+            DTOModel? objDTOModel = new DTOModel();
+            PartyDetails? objPartyDetails = new PartyDetails();
+            JObject? json = new JObject();
             try
             {
                 _logger.Info("\r\n");
@@ -101,9 +102,10 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 //log input recieved from DC Claims
                 _logger.Info(requestJson.Root);
 
-
-                var result = await GetPartyDetails(requestJson["ParticipantDataObject"]["PartyID"].ToString(), config);
-                objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(result.ToString());
+               
+               
+                var result = await helper.GetPartyDetails(requestJson["ParticipantDataObject"]["PartyID"].ToString(), config);
+                objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(result.ToString())!;
 
                 objDTOModel = JsonConvert.DeserializeObject<DTOModel>(requestJson.ToString());
 
@@ -111,11 +113,11 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
 
                 if (sessionID.Length > 0)
-                {
+                {    
 
                     //Read Payment Headers
-                    JObject objextendedData = JObject.Parse(requestJson["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].ToString());
-                    ReadClaimsPayFields(objextendedData);
+                    JObject? objextendedData = JObject.Parse(requestJson["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].ToString());
+                    await helper.ReadClaimsPayFields(objextendedData!);
 
 
                     //Mapping From extended data
@@ -126,85 +128,85 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
                     if (ClaimsPayType == Constants.C_KEY_Contacts)
                     {
-                        objStrJson.PM_PaymentType = "Contact(s)";
+                        objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_Value;
                     }
                     else if (ClaimsPayType == Constants.C_KEY_Other)
                     {
-                        objStrJson.PM_PaymentType = "Other";
+                        objStrJson.PM_PaymentType = Constants.C_KEY_Other_Value;
                     }
                     else if (ClaimsPayType == Constants.C_KEY_Vendor)
                     {
-                        objStrJson.PM_PaymentType = "Vendor";
+                        objStrJson.PM_PaymentType = Constants.C_KEY_Vendor_Value;
                     }
                     else if (ClaimsPayType == Constants.C_KEY_Lienholder)
                     {
-                        objStrJson.PM_PaymentType = "Lienholder";
+                        objStrJson.PM_PaymentType = Constants.C_KEY_Lienholder_Value;
                     }
                     else if (ClaimsPayType == Constants.C_KEY_Contacts_and_Vendor)
                     {
-                        objStrJson.PM_PaymentType = "Contact(s) and Vendor";
+                        objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_and_Vendor_Value;
                     }
                     else if (ClaimsPayType == Constants.C_KEY_Contacts_and_Mortgagee)
                     {
-                        objStrJson.PM_PaymentType = "Contact(s) and Mortgagee";
+                        objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_and_Mortgagee_Value;
                     }
 
                     if (ClaimsPayTypeRequest == Constants.C_KEY_Recoverable_Depreciation)
                     {
-                        objStrJson.PM_RequestReason = "Recoverable Depreciation";
+                        objStrJson.PM_RequestReason = Constants.C_KEY_Recoverable_Depreciation_Value;
                     }
                     else if (ClaimsPayTypeRequest == Constants.C_KEY_Emergency_Funds)
                     {
-                        objStrJson.PM_RequestReason = "Emergency Funds";
+                        objStrJson.PM_RequestReason = Constants.C_KEY_Emergency_Funds_Value;
                     }
                     else if (ClaimsPayTypeRequest == Constants.C_KEY_Loss_Payment)
                     {
-                        objStrJson.PM_RequestReason = "Loss Payment";
+                        objStrJson.PM_RequestReason = Constants.C_KEY_Loss_Payment_Value;
                     }
                     else if (ClaimsPayTypeRequest == Constants.C_KEY_Supplemental_Payment)
                     {
-                        objStrJson.PM_RequestReason = "Supplemental Payment";
+                        objStrJson.PM_RequestReason = Constants.C_KEY_Supplemental_Payment_Value;
                     }
 
                     //Mapping For payment method Detail
                     if (ClaimsPayMethod == Constants.C_KEY_Mail_Prepaid_Card)
                     {
-                        objStrJson.PMETHOD = "Mail Prepaid Card";
+                        objStrJson.PMETHOD = Constants.C_KEY_Mail_Prepaid_Card_Value;
                     }
                     else if (ClaimsPayMethod == Constants.C_KEY_Virtual_Card)
                     {
-                        objStrJson.PMETHOD = "Virtual Card";
+                        objStrJson.PMETHOD = Constants.C_KEY_Virtual_Card_Value;
                     }
                     else if (ClaimsPayMethod == Constants.C_KEY_Debit_Card)
                     {
-                        objStrJson.PMETHOD = "Debit Card";
+                        objStrJson.PMETHOD = Constants.C_KEY_Debit_Card_Value;
                     }
                     else if (ClaimsPayMethod == Constants.C_KEY_Field_Payment)
                     {
-                        objStrJson.PMETHOD = "Field Payment";
+                        objStrJson.PMETHOD = Constants.C_KEY_Field_Payment_Value;
                     }
                     else if (ClaimsPayMethod == Constants.C_KEY_Check)
                     {
-                        objStrJson.PMETHOD = "Check";
+                        objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
                     }
                     else if (ClaimsPayMethod == Constants.C_KEY_Direct_Deposit)
                     {
-                        objStrJson.PMETHOD = "Direct Deposit";
+                        objStrJson.PMETHOD = Constants.C_KEY_Direct_Deposit_Value;
                     }
                     else if (ClaimsPayMethod == Constants.C_KEY_Instant_Prepaid_Card)
                     {
-                        objStrJson.PMETHOD = "Instant Prepaid Card";
+                        objStrJson.PMETHOD = Constants.C_KEY_Instant_Prepaid_Card_Value;
                     }
                     else if (ClaimsPayMethod == Constants.C_KEY_Let_Customer_Pickup)
                     {
-                        objStrJson.PMETHOD = "Let Customer Pickup";
+                        objStrJson.PMETHOD = Constants.C_KEY_Let_Customer_Pickup_Value;
                     }
                     else if (ClaimsPayMethod == Constants.C_KEY_Prepaid_Card)
                     {
-                        objStrJson.PMETHOD = "Prepaid Card";
+                        objStrJson.PMETHOD = Constants.C_KEY_Prepaid_Card_Value;
                     }
 
-                    if (objStrJson.PM_PaymentType == "Contact(s) and Mortgagee")
+                    if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Mortgagee_Value)
                     {
                         objStrJson.PA_City = objDTOModel.AddressDTO_MailTo.AdminDivisionPrimary;
                         objStrJson.PA_Country = "USA";
@@ -217,24 +219,24 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
                     //Mapping From Claim DTO
                     objStrJson.CL_ClaimNumber = objDTOModel.ClaimDTO.ClaimID;
-                    objStrJson.CL_DateofLoss = Convert.ToDateTime(await GetLossDetails(objDTOModel.ClaimDTO.LossID, config)).ToString("yyyy-MM-dd");
+                    objStrJson.CL_DateofLoss = Convert.ToDateTime(await helper.GetLossDetails(objDTOModel.ClaimDTO.LossID, config)).ToString("yyyy-MM-dd");
                     objStrJson.CL_PolicyNumber = objDTOModel.ClaimDTO.PolicyID;
                     // objStrJson.CL_DateofLoss = objDTOModel.ClaimDTO.LossID;
 
                     //Mapping From Line DTO
-                    objStrJson.CL_CauseofLoss = await GetCauseOfLoss(objDTOModel.LineDTOs[0].CauseOfLoss);
+                    objStrJson.CL_CauseofLoss = await helper.GetCauseOfLoss(objDTOModel.LineDTOs[0].CauseOfLoss);
 
                     //Mapping From ParticipantDTO
                     objStrJson.PCON_ContactId = objDTOModel.ParticipantDataObject.PartyID;
-                    objStrJson.SCON_ContactId = null;// objDTOModel.ParticipantDataObject.PartyID;
+                    objStrJson.SCON_ContactId = null;
                     objStrJson.BUS_BusinessId = objDTOModel.ParticipantDataObject.PartyID;
-                    objStrJson.BUS_Type = await GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
+                    objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
                     objStrJson.BUS_TIN = objDTOModel.ParticipantDataObject.TaxID;
 
                     //Get Party Details 
                     if (!string.IsNullOrEmpty(objStrJson.PCON_ContactId))
                     {
-                        var responsePartyDetails = await GetPartyDetails(objStrJson.PCON_ContactId, config);
+                        var responsePartyDetails = await helper.GetPartyDetails(objStrJson.PCON_ContactId, config);
                         objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(responsePartyDetails.ToString());
 
                         //Mapping From PartyDetail 
@@ -250,8 +252,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                     {
                                         if (objPartyDetails.partyBusinessDetail.partyPhone[i].isPrimary == true)
                                         {
-                                            objStrJson.PCON_MobilePhone = "";// objPartyDetails.partyBusinessDetail.partyPhone[i].fullPhoneNumber;
-                                            objStrJson.SCON_MobilePhone = "";// objPartyDetails.partyBusinessDetail.partyPhone[i].fullPhoneNumber;
+                                            objStrJson.PCON_MobilePhone = "";
+                                            objStrJson.SCON_MobilePhone = "";
                                         }
                                     }
                                 }
@@ -264,8 +266,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                     {
                                         if (objPartyDetails.partyBusinessDetail.partyEmail[i].isPrimary == true)
                                         {
-                                            objStrJson.PCON_EmailAddress = "";// objPartyDetails.partyBusinessDetail.partyEmail[i].emailAddress;
-                                            objStrJson.SCON_EmailAddress = "";// objPartyDetails.partyBusinessDetail.partyEmail[i].emailAddress;
+                                            objStrJson.PCON_EmailAddress = "";
+                                            objStrJson.SCON_EmailAddress = "";
                                         }
                                     }
                                 }
@@ -280,9 +282,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                             && objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyName.isPrimary == true)
                                         {
                                             objStrJson.BUS_Name = objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyBusName.name;
-                                            //objStrJson.PCON_FirstName = objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyBusName.name;
-
-                                            //objStrJson.SCON_FirstName = objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyBusName.name;
+                                           
                                         }
                                     }
                                 }
@@ -295,9 +295,9 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                     {
                                         objStrJson.BUS_Street = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.locationDetailsLine1;
                                         objStrJson.BUS_City = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.adminDivisionPrimary;
-                                        objStrJson.BUS_State = await GetState(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.nationalDivisionPrimary);
+                                        objStrJson.BUS_State = await helper.GetState(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.nationalDivisionPrimary);
                                         objStrJson.BUS_Zipcode = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.postalCode;
-                                        objStrJson.BUS_Country = await GetCountry(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.countryCode.ToString().ToUpper());
+                                        objStrJson.BUS_Country = await helper.GetCountry(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.countryCode.ToString().ToUpper());
                                     }
 
                                 }
@@ -319,8 +319,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                             objStrJson.PCON_FirstName = objPartyDetails.partyIndividualDetail.partyIndNameDetail[i].partyIndName.firstName;
                                             objStrJson.PCON_LastName = objPartyDetails.partyIndividualDetail.partyIndNameDetail[i].partyIndName.lastName;
 
-                                            objStrJson.SCON_FirstName = "";// objPartyDetails.partyIndividualDetail.partyIndNameDetail[i].partyIndName.firstName;
-                                            objStrJson.SCON_LastName = "";// objPartyDetails.partyIndividualDetail.partyIndNameDetail[i].partyIndName.lastName;
+                                            objStrJson.SCON_FirstName = "";
+                                            objStrJson.SCON_LastName = "";
                                         }
                                     }
                                 }
@@ -347,8 +347,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                     {
                                         if (objPartyDetails.partyIndividualDetail.partyPhone[i].isPrimary == true)
                                         {
-                                            objStrJson.SCON_MobilePhone = "";// objPartyDetails.partyIndividualDetail.partyPhone[i].fullPhoneNumber;
-                                            objStrJson.PCON_MobilePhone = "";// objPartyDetails.partyIndividualDetail.partyPhone[i].fullPhoneNumber;
+                                            objStrJson.SCON_MobilePhone = "";
+                                            objStrJson.PCON_MobilePhone = objPartyDetails.partyIndividualDetail.partyPhone[i].fullPhoneNumber;
                                         }
                                     }
                                 }
@@ -361,9 +361,9 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                     {
                                         objStrJson.BUS_Street = objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.locationDetailsLine1;
                                         objStrJson.BUS_City = objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.adminDivisionPrimary;
-                                        objStrJson.BUS_State = await GetState(objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.nationalDivisionPrimary);
+                                        objStrJson.BUS_State = await helper.GetState(objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.nationalDivisionPrimary);
                                         objStrJson.BUS_Zipcode = objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.postalCode;
-                                        objStrJson.BUS_Country = await GetCountry(objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.countryCode.ToString().ToUpper());
+                                        objStrJson.BUS_Country = await helper.GetCountry(objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.countryCode.ToString().ToUpper());
                                     }
 
                                 }
@@ -376,12 +376,12 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                         {
                             for (int i = 0; i < objDTOModel.PaymentPayeeDataObjectsList.Count; i++)
                             {
-                                var responsePartyDetails2 = await GetPartyDetails(objDTOModel.PaymentPayeeDataObjectsList[i].ClientID, config);
-                                PartyDetails objPartyDetails2 = JsonConvert.DeserializeObject<PartyDetails>(responsePartyDetails2.ToString());
+                                var responsePartyDetails2 = await helper.GetPartyDetails(objDTOModel.PaymentPayeeDataObjectsList[i].ClientID, config);
+                                PartyDetails? objPartyDetails2 = JsonConvert.DeserializeObject<PartyDetails>(responsePartyDetails2.ToString());
 
-                                if (objPartyDetails2.partyType == "IND")
+                                if (objPartyDetails2.partyType == Constants.PartyTypeIndividual)
                                 {
-                                    if (objPartyDetails.partyType == "BUS" && numIndividual < 1)
+                                    if (objPartyDetails.partyType == Constants.PartyType && numIndividual < 1)
                                     {
                                         for (int j = 0; j < objPartyDetails2.partyIndividualDetail.partyIndNameDetail.Count; j++)
                                         {
@@ -404,7 +404,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                             }
                                         }
 
-                                        if (objStrJson.PM_PaymentType == "Contact(s) and Vendor")
+                                        if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Vendor_Value)
                                         {
                                             if (string.IsNullOrEmpty(approvalRequired))
                                                 objStrJson.PCON_Approval_Reqd = "Y";
@@ -422,22 +422,22 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                                 objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyName.partyNameID
                                                 && objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyName.isPrimary == true)
                                             {
-                                                objStrJson.SCON_FirstName = "";// objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyIndName.firstName;
-                                                objStrJson.SCON_LastName = "";// objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyIndName.lastName;
+                                                objStrJson.SCON_FirstName = "";
+                                                objStrJson.SCON_LastName = "";
 
                                             }
 
                                             if (objPartyDetails2.partyIndividualDetail.partyPhone[j].isPrimary == true)
                                             {
-                                                objStrJson.SCON_MobilePhone = "";// objPartyDetails2.partyIndividualDetail.partyPhone[j].fullPhoneNumber;
+                                                objStrJson.SCON_MobilePhone = "";
                                             }
                                             if (objPartyDetails2.partyIndividualDetail.partyEmail[j].isPrimary == true)
                                             {
-                                                objStrJson.SCON_EmailAddress = "";// objPartyDetails2.partyIndividualDetail.partyEmail[j].emailAddress;
+                                                objStrJson.SCON_EmailAddress = "";
                                             }
                                         }
 
-                                        if (objStrJson.PM_PaymentType == "Contact(s) and Vendor")
+                                        if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Vendor_Value)
                                         {
                                             if (string.IsNullOrEmpty(approvalRequired))
                                             {
@@ -452,14 +452,14 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                         }
                                     }
                                 }
-                                else if (objPartyDetails2.partyType == "BUS")
+                                else if (objPartyDetails2.partyType == Constants.PartyType)
                                 {
-                                    if (objStrJson.PM_PaymentType == "Contact(s) and Vendor")
+                                    if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Vendor_Value)
                                     {
                                         if (string.IsNullOrEmpty(approvalRequired))
                                         {
-                                            objStrJson.BUS_Type = "Vendor";
-                                            objStrJson.BUS_SubType = "Other Vendor";
+                                            objStrJson.BUS_Type = Constants.BUS_Type;
+                                            objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
                                         }
 
                                         else
@@ -482,18 +482,18 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     objStrJson.PMA_Street = string.Concat(objDTOModel.AddressDTO_MailTo.LocationDetailsLine1.ToString(), " "
                         , objDTOModel.AddressDTO_MailTo.LocationDetailsLine2 == null ? "" : objDTOModel.AddressDTO_MailTo.LocationDetailsLine2);
                     objStrJson.PMA_City = objDTOModel.AddressDTO_MailTo.AdminDivisionPrimary;
-                    objStrJson.PMA_State = await GetState(objDTOModel.AddressDTO_MailTo.NationalDivisionPrimary);
+                    objStrJson.PMA_State = await helper.GetState(objDTOModel.AddressDTO_MailTo.NationalDivisionPrimary);
                     objStrJson.PMA_Zipcode = objDTOModel.AddressDTO_MailTo.PostalCode;
-                    objStrJson.PMA_Country = await GetCountry(objDTOModel.AddressDTO_MailTo.CountryCode.ToString());
-                    if (objStrJson.PM_PaymentType == "Contact(s)")
+                    objStrJson.PMA_Country = await helper.GetCountry(objDTOModel.AddressDTO_MailTo.CountryCode.ToString());
+                    if (objStrJson.PM_PaymentType ==Constants.C_KEY_Contacts_Value)
                     {
                         objStrJson.PMA_MailTo = string.Concat(objStrJson.PCON_FirstName, " ", objStrJson.PCON_LastName);
                     }
-                    else if (objStrJson.PM_PaymentType == "Contact(s) and Vendor")
+                    else if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Vendor_Value)
                     {
                         objStrJson.PMA_MailTo = objStrJson.BUS_Name;
                     }
-                    else if (objStrJson.PM_PaymentType == "Contact(s) and Mortgagee")
+                    else if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Mortgagee_Value)
                     {
                         objStrJson.PMA_MailTo = objStrJson.BUS_Name;
                     }
@@ -514,7 +514,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     _logger.Info("\r\n");
                     _logger.Info("Request To OneInc");
                     _logger.Info(strJson);
-                    createPaymentMasterRequest.Add(new JProperty("PM_PaymentType", "Contact(s) and Vendor"));
+                    //createPaymentMasterRequest.Add(new JProperty("PM_PaymentType", "Contact(s) and Vendor"));
 
                     baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"];
                     string lURL = baseURL + "?method=CreatePaymentMaster&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(createPaymentMasterRequest.ToString());
@@ -557,8 +557,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         #region Create Vendor
         public async Task<JObject> ClaimsPayDataHandlerCreateVendor(JObject objJsonRequest)
         {
-            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
-            var config = SetNlogConfig(LogPath, "CreateVendor");
+            string? LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = helper.SetNlogConfig(LogPath!, "CreateVendor");
             var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
 
             _logger.Info("\r\n");
@@ -582,7 +582,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
                 if (!string.IsNullOrEmpty(objJsonRequest["PartyID"].ToString()))
                 {
-                    var result = await GetPartyDetails(objJsonRequest["PartyID"].ToString(), config);
+                    var result = await helper.GetPartyDetails(objJsonRequest["PartyID"].ToString(), config);
                     objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(result.ToString());
 
                     if (objPartyDetails.partyBusinessDetail != null)
@@ -599,7 +599,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 objRequestCreateVendor.session = sessionID;
                                 objStr_Json.BUS_BusinessId = objPartyDetails.partyID;
                                 objStr_Json.BUS_Type = Constants.BUS_Type;
-                                objStr_Json.BUS_SubType = await GetParticipantRole(objJsonRequest["ParticipantRolesDTO"][0]["ParticipantRole"].ToString() == "" ? "" : objJsonRequest["ParticipantRolesDTO"][0]["ParticipantRole"].ToString());
+                                objStr_Json.BUS_SubType = await helper.GetParticipantRole(objJsonRequest["ParticipantRolesDTO"][0]["ParticipantRole"].ToString() == "" ? "" : objJsonRequest["ParticipantRolesDTO"][0]["ParticipantRole"].ToString());
 
                                 objStr_Json.BUS_TINType = Constants.BUS_TINType;
 
@@ -612,9 +612,9 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                         {
                                             objStr_Json.BUS_Street = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.locationDetailsLine1;
                                             objStr_Json.BUS_City = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.adminDivisionPrimary;
-                                            objStr_Json.BUS_State = await GetState(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.nationalDivisionPrimary);
+                                            objStr_Json.BUS_State = await helper.GetState(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.nationalDivisionPrimary);
                                             objStr_Json.BUS_Zipcode = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.postalCode;
-                                            objStr_Json.BUS_Country = await GetCountry(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.countryCode.ToString().ToUpper());
+                                            objStr_Json.BUS_Country = await helper.GetCountry(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.countryCode.ToString().ToUpper());
                                         }
 
                                     }
@@ -695,12 +695,12 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         #region WebHook
         public async Task<JsonDocument> ClaimsPayDataHandlerWebHook(JObject objJsonRequest)
         {
-            JsonDocument response = null;
-            RestData objRequest = new RestData();
-            Str_Json objStr_Json = new Str_Json();
+            JsonDocument? response = null;
+            RestData? objRequest = new RestData();
+            Str_Json? objStr_Json = new Str_Json();
 
-            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
-            var config = SetNlogConfig(LogPath, "Webhook");
+            string? LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = helper.SetNlogConfig(LogPath, "Webhook");
             var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
 
             _logger.Info("\r\n");
@@ -714,15 +714,14 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
             try
             {
-                
 
-                var responsePaymentHeader = await GetPaymentHeaderDetails(objJsonRequest["PM_CR_PaymentID"].ToString(), config);
-                JObject objreq = JObject.Parse(responsePaymentHeader.ToString());
+                var responsePaymentHeader = await helper.GetPaymentHeaderDetails(objJsonRequest["PM_CR_PaymentID"].ToString(), config);
+                JObject? objreq = JObject.Parse(responsePaymentHeader.ToString());
 
-                WebHookRequestModel myDeserializedClass = System.Text.Json.JsonSerializer.Deserialize<WebHookRequestModel>(responsePaymentHeader.ToString());
+                WebHookRequestModel? myDeserializedClass = System.Text.Json.JsonSerializer.Deserialize<WebHookRequestModel>(responsePaymentHeader.ToString());
 
-                JObject colObj = JObject.Parse(objreq["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].ToString());
-                JArray columArray = JArray.Parse(colObj["column"].ToString());
+                JObject? colObj = JObject.Parse(objreq["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].ToString());
+                JArray? columArray = JArray.Parse(colObj["column"].ToString());
 
                 var jObjects = columArray.ToObject<List<JObject>>();
 
@@ -781,7 +780,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -803,7 +802,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -825,7 +824,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -847,7 +846,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -869,7 +868,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -891,7 +890,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -913,7 +912,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -935,7 +934,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -957,7 +956,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -979,7 +978,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -1001,7 +1000,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -1023,7 +1022,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject value = (JObject)obj["value"];
+                                JObject? value = (JObject)obj["value"];
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -1042,22 +1041,22 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 }
 
 
-                JArray outputArray = JArray.FromObject(jObjects);         //Output array
+                JArray? outputArray = JArray.FromObject(jObjects);         //Output array
 
                 objreq["paymentHeaderDTO"]["totalApprovedAmount"] = objJsonRequest["PM_Amount"];
                 objreq["paymentHeaderDTO"]["paymentNumber"] = objJsonRequest["PM_CheckNumber"];
                 objreq["paymentHeaderDTO"]["paymentID"] = objJsonRequest["PM_CR_PaymentID"];
                 //Create new object for the new array
-                JObject updatedJson = new JObject();
+                JObject? updatedJson = new JObject();
                 updatedJson["name"] = outputArray;
                 objreq["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].Replace(updatedJson);
 
 
 
-                string temp = objreq.ToString();
+                string? temp = objreq.ToString();
 
-                string baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
-                string URI = baseURI + "/v3/paymentheader";
+                string? baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
+                string? URI = baseURI + "/v3/paymentheader";
 
                 _logger.Info("\r\n");
                 _logger.Info("Request URI");
@@ -1074,11 +1073,11 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 var content = JObject.Parse(objreq.ToString());
                 var stringContent = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
 
-                var responsePutPaymentHeader = await objhttpClient.PutAsync(URI,stringContent);
+                var responsePutPaymentHeader = await objhttpClient.PutAsync(URI, stringContent);
                 var result = responsePutPaymentHeader.Content.ReadAsStringAsync();
                 if (responsePutPaymentHeader.IsSuccessStatusCode)
                 {
-                    response = JsonDocument.Parse("{\n  \"PM_IP_PaymentID\": \"" + objJsonRequest["PM_IP_PaymentID"] +"\",\n  \"Status\": \"Success\"\n}");
+                    response = JsonDocument.Parse("{\n  \"PM_IP_PaymentID\": \"" + objJsonRequest["PM_IP_PaymentID"] + "\",\n  \"Status\": \"Success\"\n}");
                 }
                 else
                 {
@@ -1119,7 +1118,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             Str_Json objStr_Json = new Str_Json();
 
             string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
-            var config = SetNlogConfig(LogPath, "GetPaymentStatus");
+            var config = helper.SetNlogConfig(LogPath, "GetPaymentStatus");
             JObject response = null;
             string sessionID = await GetSessionID(config);
             if (sessionID.Length > 0)
@@ -1129,11 +1128,14 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 objRequest.str_json = objStr_Json;
 
                 var opt = new JsonSerializerOptions() { WriteIndented = true };
-                string strJson = System.Text.Json.JsonSerializer.Serialize<RestData>(objRequest, opt);
+                string strJson = System.Text.Json.JsonSerializer.Serialize<Str_Json>(objStr_Json, opt);
 
-                var loginParams = JObject.Parse(strJson);
+
+                JObject getPaymentStatusRequest = new JObject(
+                                 new JProperty("session", sessionID),
+                                 new JProperty("str_json", strJson.ToString()));
                 baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
-                string lURL = baseURL + "?method=GetPaymentStatus&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(strJson);
+                string lURL = baseURL + "?method=GetPaymentStatus&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(getPaymentStatusRequest.ToString());
 
                 var result = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
                 response = JObject.Parse(result.Result.ToString());
@@ -1149,11 +1151,11 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         #region Stop Payment
         public async Task<JObject> ClaimsPayDataHandlerStopPayment(JObject objJsonRequest)
         {
-            RestData objRequest = new RestData();
-            Str_Json objStr_Json = new Str_Json();
+            RestData? objRequest = new RestData();
+            Str_Json? objStr_Json = new Str_Json();
 
-            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
-            var config = SetNlogConfig(LogPath, "StopPayment");
+            string? LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = helper.SetNlogConfig(LogPath, "StopPayment");
 
             var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
 
@@ -1166,7 +1168,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             //log input recieved from DC Claims
             _logger.Info(objJsonRequest.Root);
 
-            JObject response = null;
+            JObject? response = null;
             try
             {
                 _logger.Info("\r\n");
@@ -1183,7 +1185,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
                 if (sessionID.Length > 0)
                 {
-                    objStr_Json.PM_PaymentID = "PMTPMM001PL06666123";
+                    objStr_Json.PM_PaymentID = objJsonRequest["PaymentID"].ToString();
                     objRequest.session = sessionID;
                     objRequest.str_json = objStr_Json;
 
@@ -1236,12 +1238,12 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         #region Resend Emails
         public async Task<JObject> ClaimsPayDataHandlerResendEmail(JObject objJsonRequest)
         {
-            JObject response = null;
-            RestData objRequest = new RestData();
-            Str_Json objStr_Json = new Str_Json();
+            JObject? response = null;
+            RestData? objRequest = new RestData();
+            Str_Json? objStr_Json = new Str_Json();
 
             string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
-            var config = SetNlogConfig(LogPath, "ResendEmail");
+            var config = helper.SetNlogConfig(LogPath, "ResendEmail");
             var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
 
             _logger.Info("\r\n");
@@ -1267,7 +1269,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
                 if (sessionID.Length > 0)
                 {
-                    objStr_Json.PM_PaymentID = objJsonRequest["PaymentHeaderDTO"]["PaymentID"].ToString();
+                    objStr_Json.PM_PaymentID = objJsonRequest["PaymentID"].ToString();
                     objRequest.session = sessionID;
                     objRequest.str_json = objStr_Json;
 
@@ -1282,7 +1284,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     _logger.Info(strJson);
 
                     baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
-                    string lURL = baseURL + "?method=StopPayment&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(objResendEmailsRequest.ToString());
+                    string lURL = baseURL + "?method=ResendEmails&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(objResendEmailsRequest.ToString());
 
                     var result = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
                     response = JObject.Parse(result.Result.ToString());
@@ -1321,7 +1323,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         #region Get Session Id
         public async Task<string> GetSessionID(LoggingConfiguration config)
         {
-            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            string? LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
             JObject json = new JObject();
             var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
             try
@@ -1342,7 +1344,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 objUserAuthenticationModel.user_auth = objUserAuth;
 
                 var opt = new JsonSerializerOptions() { WriteIndented = true };
-                string strJson = System.Text.Json.JsonSerializer.Serialize<UserAuthenticationModel>(objUserAuthenticationModel, opt);
+                string? strJson = System.Text.Json.JsonSerializer.Serialize<UserAuthenticationModel>(objUserAuthenticationModel, opt);
                 var loginParams = JObject.Parse(strJson);
                 baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
                 string lURL = baseURL + "?method=Login&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(strJson);
@@ -1385,272 +1387,6 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
         #endregion
 
-        #region Other Methods
-
-        #region Get Loss Details
-        public async Task<string> GetLossDetails(string LossID, LoggingConfiguration config)
-        {
-            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
-            JObject objResponse = null;
-            try
-            {
-
-                _logger.Info("\r\n");
-                _logger.Info("\r\n");
-                _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Party Detail ");
-                _logger.Info("");
-
-                string baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
-                string URI = baseURI + "/v3/losses/lossids?includeExtendedData=false";
-
-                _logger.Info("\r\n");
-                _logger.Info("Request");
-                _logger.Info(URI);
-                objhttpClient.DefaultRequestHeaders.Clear();
-                objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
-                objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
-                var content = JObject.Parse("{\"Identifiers\":[\"" + LossID + "\"]}");
-                var stringContent = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
-                var result = await objhttpClient.PostAsync(URI, stringContent).Result.Content.ReadAsStringAsync();
-                objResponse = JObject.Parse(result.ToString());
-
-                _logger.Info("\r\n");
-                _logger.Info("Response");
-                _logger.Info(result.ToString());
-
-                //return result.ToString();
-                _logger.Info("\r\n");
-                _logger.Info("Loss Details Executed Successfully");
-            }
-
-            catch (Exception ex)
-            {
-
-                _logger.Info("\r\n");
-                _logger.Info("Loss Execution failed");
-                _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
-
-            }
-            finally
-            {
-                //_logger.Info("------------------------------------------------------------------ || Log End || -------------------------------------------------------------------------");
-                // NLog.LogManager.Shutdown();
-            }
-
-            return objResponse["loss"][0]["lossDate"].ToString();
-        }
-        #endregion
-
-        #region Get Party Details
-        public async Task<string> GetPartyDetails(string partyID, LoggingConfiguration config)
-        {
-            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
-            try
-            {
-
-                _logger.Info("\r\n");
-
-                _logger.Info("\r\n");
-                _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Party Detail ");
-                _logger.Info("");
-
-                string baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
-                string URI = baseURI + "/v2/parties/" + partyID + "/partyDetails";
-
-                _logger.Info("\r\n");
-                _logger.Info("Request");
-                _logger.Info(URI);
-                objhttpClient.DefaultRequestHeaders.Clear();
-                objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
-                objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
-
-                var result = await objhttpClient.GetAsync(URI).Result.Content.ReadAsStringAsync();
-
-                _logger.Info("\r\n");
-                _logger.Info("Response");
-                _logger.Info(result.ToString());
-
-                return result.ToString();
-                _logger.Info("\r\n");
-                _logger.Info("Party Details Executed Successfully");
-            }
-
-            catch (Exception ex)
-            {
-
-                _logger.Info("\r\n");
-                _logger.Info("Party Detail Execution failed");
-                _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
-
-            }
-            finally
-            {
-                //_logger.Info("------------------------------------------------------------------ || Log End || -------------------------------------------------------------------------");
-                // NLog.LogManager.Shutdown();
-            }
-
-            return "";
-        }
-
-        #endregion
-
-        #region Get Payment Header Details
-        public async Task<string> GetPaymentHeaderDetails(string paymentID, LoggingConfiguration config)
-        {
-            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
-            try
-            {
-
-                _logger.Info("\r\n");
-
-                _logger.Info("\r\n");
-                _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Payment Header Details ");
-                _logger.Info("");
-
-                string baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
-                string URI = baseURI + "/v2/payments/" + paymentID + "/paymentHeader?includeExtendedData=true";
-
-                _logger.Info("\r\n");
-                _logger.Info("Request");
-                _logger.Info(URI);
-                objhttpClient.DefaultRequestHeaders.Clear();
-                objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
-                objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
-
-                var result = await objhttpClient.GetAsync(URI).Result.Content.ReadAsStringAsync();
-
-                _logger.Info("\r\n");
-                _logger.Info("Response");
-                _logger.Info(result.ToString());
-
-                return result.ToString();
-                _logger.Info("\r\n");
-                _logger.Info("Get Payment Header Details Executed Successfully");
-            }
-
-            catch (Exception ex)
-            {
-
-                _logger.Info("\r\n");
-                _logger.Info("Get Payment Header Details Execution failed");
-                _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
-
-            }
-            finally
-            {
-                //_logger.Info("------------------------------------------------------------------ || Log End || -------------------------------------------------------------------------");
-                // NLog.LogManager.Shutdown();
-            }
-
-            return "";
-        }
-
-        #endregion
-
-        #region Get Country
-        public async Task<string> GetCountry(string key_name)
-        {
-            JObject objStateKeys = JObject.Parse(File.ReadAllText(@"Shared\\CountryKeys.json"));
-            string value = objStateKeys[key_name].ToString();
-            return value;
-        }
-
-        #endregion
-
-        #region Get State
-        public async Task<string> GetState(string key_name)
-        {
-            JObject objStateKeys = JObject.Parse(File.ReadAllText(@"Shared\\StateKeys.json"));
-            string value = objStateKeys[key_name].ToString();
-            return value;
-        }
-
-        #endregion
-
-        #region Get Cause Of Loss
-        public async Task<string> GetCauseOfLoss(string key_name)
-        {
-            JObject objStateKeys = JObject.Parse(File.ReadAllText(@"Shared\\CauseOfLoss.json"));
-            string value = objStateKeys[key_name].ToString();
-            return value;
-        }
-
-        #endregion
-
-        #region Read Claimspay Field from Extended Data
-        public async Task ReadClaimsPayFields(JObject extendedData)
-        {
-            foreach (dynamic Column in extendedData["column"])
-            {
-                if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_ClaimsPayType))
-                {
-                    if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
-                    {
-                        ClaimsPayType = Column.value["#text"].Value;
-                    }
-                }
-                else if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_ClaimsPayRequestType))
-                {
-                    if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
-                    {
-                        ClaimsPayTypeRequest = Column.value["#text"].Value;
-                    }
-                }
-                else if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_LoanAccountNumber))
-                {
-                    if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
-                    {
-                        LoanAccountNumber = Column.value["#text"].Value;
-                    }
-                }
-                else if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_ClaimsPayMethod))
-                {
-                    if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
-                    {
-                        ClaimsPayMethod = Column.value["#text"].Value;
-                    }
-
-                }
-                else if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_ApprovalRequired))
-                {
-                    if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
-                    {
-                        approvalRequired = Column.value["#text"].Value;
-                    }
-
-                }
-
-            }
-
-        }
-        #endregion
-
-        #region Set Nlog Config 
-        public LoggingConfiguration SetNlogConfig(string logPath, string logName)
-        {
-            LoggingConfiguration config = new LoggingConfiguration();
-            var consoleTarget = new FileTarget
-            {
-                Name = "logfile",
-                FileName = "" + logPath + "//" + logName + "_" + DateTime.Now.ToString("dd-MM-yyyy") + ".txt",
-                Layout = "${message}"
-            };
-            config.AddRule(LogLevel.Debug, LogLevel.Fatal, consoleTarget, "*");
-            LogManager.Configuration = config;
-            return config;
-        }
-        #endregion
-
-        #region Get Participant Role
-        public async Task<string> GetParticipantRole(string key_name)
-        {
-            JObject objStateKeys = JObject.Parse(File.ReadAllText(@"Shared\\ParticipantRole.json"));
-            string value = objStateKeys[key_name].ToString();
-            return value;
-        }
-
-        #endregion
-
-        #endregion
+        
     }
 }

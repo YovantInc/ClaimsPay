@@ -7,35 +7,57 @@ namespace ClaimsPay.Modules.ClaimsPay.Models
         //Constants for Ref
         public static string BUS_TINType = "TIN";
         public static string BUS_Type = "Vendor";
+        public static string BUS_Sub_Type = "Other Vendor";
         public static string BUS_Status = "Active";
         public static string PartyType = "BUS";
+        public static string PartyTypeIndividual = "IND";
+        
 
         //Payment Methods
         public const string C_KEY_Mail_Prepaid_Card = "2d0b9";
+        public const string C_KEY_Mail_Prepaid_Card_Value = "Mail Prepaid Card";
         public const string C_KEY_Virtual_Card = "380e3";
+        public const string C_KEY_Virtual_Card_Value = "Virtual Card";
         public const string C_KEY_Debit_Card = "4c227";
+        public const string C_KEY_Debit_Card_Value = "Debit Card";
         public const string C_KEY_Field_Payment = "54ee6";
+        public const string C_KEY_Field_Payment_Value = "Field Payment";
         public const string C_KEY_Check = "6755e";
+        public const string C_KEY_Check_Value = "Check";
         public const string C_KEY_Direct_Deposit = "967b9";
+        public const string C_KEY_Direct_Deposit_Value = "Direct Deposit";
         public const string C_KEY_Instant_Prepaid_Card = "a4959";
+        public const string C_KEY_Instant_Prepaid_Card_Value = "Instant Prepaid Card";
         public const string C_KEY_Let_Customer_Pickup = "b3146";
+        public const string C_KEY_Let_Customer_Pickup_Value = "Let Customer Pickup";
         public const string C_KEY_Prepaid_Card = "e3c11";
+        public const string C_KEY_Prepaid_Card_Value = "Prepaid Card";
 
 
         //Claimspay Type
         public const string C_KEY_Contacts = "00180";
+        public const string C_KEY_Contacts_Value = "Contact(s)";
         public const string C_KEY_Other = "08b32";
+        public const string C_KEY_Other_Value = "Other";
         public const string C_KEY_Vendor = "22c81";
+        public const string C_KEY_Vendor_Value = "Vendor";
         public const string C_KEY_Lienholder = "9c581";
+        public const string C_KEY_Lienholder_Value = "Lienholder";
         public const string C_KEY_Contacts_and_Vendor = "c04bd";
+        public const string C_KEY_Contacts_and_Vendor_Value = "Contact(s) and Vendor";
         public const string C_KEY_Contacts_and_Mortgagee = "e1e44";
+        public const string C_KEY_Contacts_and_Mortgagee_Value = "Contact(s) and Mortgagee";
 
 
         //Request Type
         public const string C_KEY_Recoverable_Depreciation = "0daa5";
+        public const string C_KEY_Recoverable_Depreciation_Value = "Recoverable Depreciation";
         public const string C_KEY_Emergency_Funds = "b3893";
+        public const string C_KEY_Emergency_Funds_Value = "Emergency Funds";
         public const string C_KEY_Loss_Payment = "b6cbb";
+        public const string C_KEY_Loss_Payment_Value = "Loss Payment";
         public const string C_KEY_Supplemental_Payment = "c52fc";
+        public const string C_KEY_Supplemental_Payment_Value = "Supplemental Payment";
 
 
         //DataItem

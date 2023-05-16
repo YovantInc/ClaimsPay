@@ -1,3 +1,10 @@
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.csproj.AssemblyReference.cache
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.GeneratedMSBuildEditorConfig.editorconfig
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.AssemblyInfoInputs.cache
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.AssemblyInfo.cs
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.csproj.CoreCompileInputs.cache
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.MvcApplicationPartsAssemblyInfo.cs
+C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.MvcApplicationPartsAssemblyInfo.cache
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Debug\net7.0\nlog.config
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Debug\net7.0\appsettings.Development.json
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Debug\net7.0\appsettings.json
@@ -25,13 +32,6 @@ C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Debug\net7.0\NLog.Web.AspNe
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Debug\net7.0\Swashbuckle.AspNetCore.Swagger.dll
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Debug\net7.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\bin\Debug\net7.0\Swashbuckle.AspNetCore.SwaggerUI.dll
-C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.csproj.AssemblyReference.cache
-C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.GeneratedMSBuildEditorConfig.editorconfig
-C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.AssemblyInfoInputs.cache
-C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.AssemblyInfo.cs
-C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.csproj.CoreCompileInputs.cache
-C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.MvcApplicationPartsAssemblyInfo.cs
-C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\ClaimsPay.MvcApplicationPartsAssemblyInfo.cache
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\staticwebassets\msbuild.ClaimsPay.Microsoft.AspNetCore.StaticWebAssets.props
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\staticwebassets\msbuild.build.ClaimsPay.props
 C:\Akshay\Personal\ClaimsPay\ClaimsPay\ClaimsPay\obj\Debug\net7.0\staticwebassets\msbuild.buildMultiTargeting.ClaimsPay.props

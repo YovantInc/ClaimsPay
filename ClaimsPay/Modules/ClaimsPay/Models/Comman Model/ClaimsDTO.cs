@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
 {
-    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
+    // Root myDeserializedClass = JsonConvert.Deserializestring<Root>(myJsonResponse);
     public class AddressDTOMailTo
     {
         [JsonProperty("AddressID")]
@@ -19,16 +19,16 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public string AdminDivisionPrimary { get; set; }
 
         [JsonProperty("AdminDivisionSecondary")]
-        public object AdminDivisionSecondary { get; set; }
+        public string AdminDivisionSecondary { get; set; }
 
         [JsonProperty("AdminDivisionTertiary")]
-        public object AdminDivisionTertiary { get; set; }
+        public string AdminDivisionTertiary { get; set; }
 
         [JsonProperty("AllowPartial")]
         public bool? AllowPartial { get; set; }
 
         [JsonProperty("Attention")]
-        public object Attention { get; set; }
+        public string Attention { get; set; }
 
         [JsonProperty("CountryCode")]
         public string CountryCode { get; set; }
@@ -52,52 +52,52 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public DateTime? LastUpdatedDate { get; set; }
 
         [JsonProperty("Latitude")]
-        public object Latitude { get; set; }
+        public string Latitude { get; set; }
 
         [JsonProperty("LocationDetailsLine1")]
         public string LocationDetailsLine1 { get; set; }
 
         [JsonProperty("LocationDetailsLine2")]
-        public object LocationDetailsLine2 { get; set; }
+        public string LocationDetailsLine2 { get; set; }
 
         [JsonProperty("LocationDetailsLine3")]
-        public object LocationDetailsLine3 { get; set; }
+        public string LocationDetailsLine3 { get; set; }
 
         [JsonProperty("LocationDetailsLine4")]
-        public object LocationDetailsLine4 { get; set; }
+        public string LocationDetailsLine4 { get; set; }
 
         [JsonProperty("Longitude")]
-        public object Longitude { get; set; }
+        public string Longitude { get; set; }
 
         [JsonProperty("NationalDivisionPrimary")]
         public string NationalDivisionPrimary { get; set; }
 
         [JsonProperty("NationalDivisionSecondary")]
-        public object NationalDivisionSecondary { get; set; }
+        public string NationalDivisionSecondary { get; set; }
 
         [JsonProperty("OldAddressCountryCode")]
-        public object OldAddressCountryCode { get; set; }
+        public string OldAddressCountryCode { get; set; }
 
         [JsonProperty("PostalCode")]
         public string PostalCode { get; set; }
 
         [JsonProperty("SubAddressType")]
-        public object SubAddressType { get; set; }
+        public string SubAddressType { get; set; }
 
         [JsonProperty("SubAdminDivisionPrimary")]
-        public object SubAdminDivisionPrimary { get; set; }
+        public string SubAdminDivisionPrimary { get; set; }
 
         [JsonProperty("SubAdminDivisionSecondary")]
-        public object SubAdminDivisionSecondary { get; set; }
+        public string SubAdminDivisionSecondary { get; set; }
 
         [JsonProperty("SubAdminDivisionTertiary")]
-        public object SubAdminDivisionTertiary { get; set; }
+        public string SubAdminDivisionTertiary { get; set; }
 
         [JsonProperty("SubAttention")]
-        public object SubAttention { get; set; }
+        public string SubAttention { get; set; }
 
         [JsonProperty("SubCountryCode")]
-        public object SubCountryCode { get; set; }
+        public string SubCountryCode { get; set; }
 
         [JsonProperty("SubEffectiveDate")]
         public DateTime? SubEffectiveDate { get; set; }
@@ -106,37 +106,37 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public DateTime? SubExpirationDate { get; set; }
 
         [JsonProperty("SubLastTransactionID")]
-        public object SubLastTransactionID { get; set; }
+        public string SubLastTransactionID { get; set; }
 
         [JsonProperty("SubLastUpdatedDate")]
         public DateTime? SubLastUpdatedDate { get; set; }
 
         [JsonProperty("SubLatitude")]
-        public object SubLatitude { get; set; }
+        public string SubLatitude { get; set; }
 
         [JsonProperty("SubLocationDetailsLine1")]
-        public object SubLocationDetailsLine1 { get; set; }
+        public string SubLocationDetailsLine1 { get; set; }
 
         [JsonProperty("SubLocationDetailsLine2")]
-        public object SubLocationDetailsLine2 { get; set; }
+        public string SubLocationDetailsLine2 { get; set; }
 
         [JsonProperty("SubLocationDetailsLine3")]
-        public object SubLocationDetailsLine3 { get; set; }
+        public string SubLocationDetailsLine3 { get; set; }
 
         [JsonProperty("SubLocationDetailsLine4")]
-        public object SubLocationDetailsLine4 { get; set; }
+        public string SubLocationDetailsLine4 { get; set; }
 
         [JsonProperty("SubLongitude")]
-        public object SubLongitude { get; set; }
+        public string SubLongitude { get; set; }
 
         [JsonProperty("SubNationalDivisionPrimary")]
-        public object SubNationalDivisionPrimary { get; set; }
+        public string SubNationalDivisionPrimary { get; set; }
 
         [JsonProperty("SubNationalDivisionSecondary")]
-        public object SubNationalDivisionSecondary { get; set; }
+        public string SubNationalDivisionSecondary { get; set; }
 
         [JsonProperty("SubPostalCode")]
-        public object SubPostalCode { get; set; }
+        public string SubPostalCode { get; set; }
     }
 
     public class AddressTypeAssociation
@@ -214,10 +214,10 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public string EnteredByID { get; set; }
 
         [JsonProperty("DateClosed")]
-        public object DateClosed { get; set; }
+        public string DateClosed { get; set; }
 
         [JsonProperty("DateReopened")]
-        public object DateReopened { get; set; }
+        public string DateReopened { get; set; }
 
         [JsonProperty("Complexity")]
         public string Complexity { get; set; }
@@ -226,64 +226,64 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public string RegulatoryJurisdiction { get; set; }
 
         [JsonProperty("RegulatoryTerritory")]
-        public object RegulatoryTerritory { get; set; }
+        public string RegulatoryTerritory { get; set; }
 
         [JsonProperty("RegulatoryCountry")]
         public string RegulatoryCountry { get; set; }
 
         [JsonProperty("HandlingCompany")]
-        public object HandlingCompany { get; set; }
+        public string HandlingCompany { get; set; }
 
         [JsonProperty("SuitFiledIndicator")]
         public bool? SuitFiledIndicator { get; set; }
 
         [JsonProperty("InsuredNotificationDate")]
-        public object InsuredNotificationDate { get; set; }
+        public string InsuredNotificationDate { get; set; }
 
         [JsonProperty("AccountLocation")]
-        public object AccountLocation { get; set; }
+        public string? AccountLocation { get; set; }
 
         [JsonProperty("AccountLocationDescription")]
-        public object AccountLocationDescription { get; set; }
+        public string? AccountLocationDescription { get; set; }
 
         [JsonProperty("ClaimGroupPushDate")]
-        public object ClaimGroupPushDate { get; set; }
+        public string? ClaimGroupPushDate { get; set; }
 
         [JsonProperty("ConvertedClaimIndicator")]
         public bool? ConvertedClaimIndicator { get; set; }
 
         [JsonProperty("InternationalClaimNumber")]
-        public object InternationalClaimNumber { get; set; }
+        public string? InternationalClaimNumber { get; set; }
 
         [JsonProperty("ClaimToSuitIndicator")]
         public bool? ClaimToSuitIndicator { get; set; }
 
         [JsonProperty("HandlingDepartment")]
-        public object HandlingDepartment { get; set; }
+        public string? HandlingDepartment { get; set; }
 
         [JsonProperty("DefaultCurrency")]
-        public string DefaultCurrency { get; set; }
+        public string? DefaultCurrency { get; set; }
 
         [JsonProperty("AllowAutomatedPaymentIndicator")]
         public bool? AllowAutomatedPaymentIndicator { get; set; }
 
         [JsonProperty("RecoveryScore")]
-        public object RecoveryScore { get; set; }
+        public string? RecoveryScore { get; set; }
 
         [JsonProperty("InsuredReportNumber")]
-        public object InsuredReportNumber { get; set; }
+        public string? InsuredReportNumber { get; set; }
 
         [JsonProperty("ClaimSourceType")]
-        public object ClaimSourceType { get; set; }
+        public string? ClaimSourceType { get; set; }
 
         [JsonProperty("LastTransactionID")]
-        public string LastTransactionID { get; set; }
+        public string? LastTransactionID { get; set; }
 
         [JsonProperty("ClientSatisfaction")]
         public int? ClientSatisfaction { get; set; }
 
         [JsonProperty("ProductLines")]
-        public object ProductLines { get; set; }
+        public string? ProductLines { get; set; }
     }
 
     public class Column
@@ -310,37 +310,37 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
     public class Columns
     {
         [JsonProperty("column")]
-        public List<Column> column { get; set; }
+        public List<Column>? column { get; set; }
     }
 
     public class ContactAddressDetail
     {
         [JsonProperty("AddressID")]
-        public string AddressID { get; set; }
+        public string? AddressID { get; set; }
 
         [JsonProperty("AddressType")]
-        public string AddressType { get; set; }
+        public string? AddressType { get; set; }
 
         [JsonProperty("AddressTypeAssociations")]
-        public List<AddressTypeAssociation> AddressTypeAssociations { get; set; }
+        public List<AddressTypeAssociation>? AddressTypeAssociations { get; set; }
 
         [JsonProperty("AdminDivisionPrimary")]
-        public string AdminDivisionPrimary { get; set; }
+        public string? AdminDivisionPrimary { get; set; }
 
         [JsonProperty("AdminDivisionSecondary")]
-        public object AdminDivisionSecondary { get; set; }
+        public string? AdminDivisionSecondary { get; set; }
 
         [JsonProperty("AdminDivisionTertiary")]
-        public object AdminDivisionTertiary { get; set; }
+        public string? AdminDivisionTertiary { get; set; }
 
         [JsonProperty("AllowPartial")]
         public bool? AllowPartial { get; set; }
 
         [JsonProperty("Attention")]
-        public object Attention { get; set; }
+        public string? Attention { get; set; }
 
         [JsonProperty("CountryCode")]
-        public string CountryCode { get; set; }
+        public string? CountryCode { get; set; }
 
         [JsonProperty("EffectiveDate")]
         public DateTime? EffectiveDate { get; set; }
@@ -349,64 +349,64 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public DateTime? ExpirationDate { get; set; }
 
         [JsonProperty("FullAddress")]
-        public string FullAddress { get; set; }
+        public string? FullAddress { get; set; }
 
         [JsonProperty("GeographicFormatCode")]
         public string GeographicFormatCode { get; set; }
 
         [JsonProperty("LastTransactionID")]
-        public string LastTransactionID { get; set; }
+        public string? LastTransactionID { get; set; }
 
         [JsonProperty("LastUpdatedDate")]
         public DateTime? LastUpdatedDate { get; set; }
 
         [JsonProperty("Latitude")]
-        public object Latitude { get; set; }
+        public string? Latitude { get; set; }
 
         [JsonProperty("LocationDetailsLine1")]
-        public string LocationDetailsLine1 { get; set; }
+        public string? LocationDetailsLine1 { get; set; }
 
         [JsonProperty("LocationDetailsLine2")]
-        public object LocationDetailsLine2 { get; set; }
+        public string? LocationDetailsLine2 { get; set; }
 
         [JsonProperty("LocationDetailsLine3")]
-        public object LocationDetailsLine3 { get; set; }
+        public string? LocationDetailsLine3 { get; set; }
 
         [JsonProperty("LocationDetailsLine4")]
-        public object LocationDetailsLine4 { get; set; }
+        public string? LocationDetailsLine4 { get; set; }
 
         [JsonProperty("Longitude")]
-        public object Longitude { get; set; }
+        public string? Longitude { get; set; }
 
         [JsonProperty("NationalDivisionPrimary")]
-        public string NationalDivisionPrimary { get; set; }
+        public string? NationalDivisionPrimary { get; set; }
 
         [JsonProperty("NationalDivisionSecondary")]
-        public object NationalDivisionSecondary { get; set; }
+        public string? NationalDivisionSecondary { get; set; }
 
         [JsonProperty("OldAddressCountryCode")]
-        public object OldAddressCountryCode { get; set; }
+        public string? OldAddressCountryCode { get; set; }
 
         [JsonProperty("PostalCode")]
-        public string PostalCode { get; set; }
+        public string? PostalCode { get; set; }
 
         [JsonProperty("SubAddressType")]
-        public object SubAddressType { get; set; }
+        public string? SubAddressType { get; set; }
 
         [JsonProperty("SubAdminDivisionPrimary")]
-        public object SubAdminDivisionPrimary { get; set; }
+        public string? SubAdminDivisionPrimary { get; set; }
 
         [JsonProperty("SubAdminDivisionSecondary")]
-        public object SubAdminDivisionSecondary { get; set; }
+        public string? SubAdminDivisionSecondary { get; set; }
 
         [JsonProperty("SubAdminDivisionTertiary")]
-        public object SubAdminDivisionTertiary { get; set; }
+        public string? SubAdminDivisionTertiary { get; set; }
 
         [JsonProperty("SubAttention")]
-        public object SubAttention { get; set; }
+        public string? SubAttention { get; set; }
 
         [JsonProperty("SubCountryCode")]
-        public object SubCountryCode { get; set; }
+        public string? SubCountryCode { get; set; }
 
         [JsonProperty("SubEffectiveDate")]
         public DateTime? SubEffectiveDate { get; set; }
@@ -415,109 +415,109 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public DateTime? SubExpirationDate { get; set; }
 
         [JsonProperty("SubLastTransactionID")]
-        public object SubLastTransactionID { get; set; }
+        public string? SubLastTransactionID { get; set; }
 
         [JsonProperty("SubLastUpdatedDate")]
         public DateTime? SubLastUpdatedDate { get; set; }
 
         [JsonProperty("SubLatitude")]
-        public object SubLatitude { get; set; }
+        public string? SubLatitude { get; set; }
 
         [JsonProperty("SubLocationDetailsLine1")]
-        public object SubLocationDetailsLine1 { get; set; }
+        public string? SubLocationDetailsLine1 { get; set; }
 
         [JsonProperty("SubLocationDetailsLine2")]
-        public object SubLocationDetailsLine2 { get; set; }
+        public string? SubLocationDetailsLine2 { get; set; }
 
         [JsonProperty("SubLocationDetailsLine3")]
-        public object SubLocationDetailsLine3 { get; set; }
+        public string? SubLocationDetailsLine3 { get; set; }
 
         [JsonProperty("SubLocationDetailsLine4")]
-        public object SubLocationDetailsLine4 { get; set; }
+        public string? SubLocationDetailsLine4 { get; set; }
 
         [JsonProperty("SubLongitude")]
-        public object SubLongitude { get; set; }
+        public string SubLongitude { get; set; }
 
         [JsonProperty("SubNationalDivisionPrimary")]
-        public object SubNationalDivisionPrimary { get; set; }
+        public string? SubNationalDivisionPrimary { get; set; }
 
         [JsonProperty("SubNationalDivisionSecondary")]
-        public object SubNationalDivisionSecondary { get; set; }
+        public string? SubNationalDivisionSecondary { get; set; }
 
         [JsonProperty("SubPostalCode")]
-        public object SubPostalCode { get; set; }
+        public string? SubPostalCode { get; set; }
     }
 
     public class ContactInfoDTO
     {
         [JsonProperty("ContactParticipantID")]
-        public string ContactParticipantID { get; set; }
+        public string? ContactParticipantID { get; set; }
 
         [JsonProperty("ContactPartyType")]
-        public string ContactPartyType { get; set; }
+        public string? ContactPartyType { get; set; }
 
         [JsonProperty("ContactFirstName")]
-        public string ContactFirstName { get; set; }
+        public string? ContactFirstName { get; set; }
 
         [JsonProperty("ContactMiddleName")]
-        public string ContactMiddleName { get; set; }
+        public string? ContactMiddleName { get; set; }
 
         [JsonProperty("ContactLastName")]
-        public string ContactLastName { get; set; }
+        public string? ContactLastName { get; set; }
 
         [JsonProperty("ContactFirstNamePhonetic")]
-        public string ContactFirstNamePhonetic { get; set; }
+        public string? ContactFirstNamePhonetic { get; set; }
 
         [JsonProperty("ContactMiddleNamePhonetic")]
-        public string ContactMiddleNamePhonetic { get; set; }
+        public string? ContactMiddleNamePhonetic { get; set; }
 
         [JsonProperty("ContactLastNamePhonetic")]
-        public string ContactLastNamePhonetic { get; set; }
+        public string? ContactLastNamePhonetic { get; set; }
 
         [JsonProperty("ContactFullName")]
-        public string ContactFullName { get; set; }
+        public string? ContactFullName { get; set; }
 
         [JsonProperty("ContactBusinessName")]
-        public string ContactBusinessName { get; set; }
+        public string? ContactBusinessName { get; set; }
 
         [JsonProperty("ContactBusinessNamePhonetic")]
-        public object ContactBusinessNamePhonetic { get; set; }
+        public string? ContactBusinessNamePhonetic { get; set; }
 
         [JsonProperty("ContactPhoneType")]
-        public string ContactPhoneType { get; set; }
+        public string? ContactPhoneType { get; set; }
 
         [JsonProperty("ContactFullPhone")]
-        public string ContactFullPhone { get; set; }
+        public string? ContactFullPhone { get; set; }
 
         [JsonProperty("ContactPhoneExt")]
-        public object ContactPhoneExt { get; set; }
+        public string? ContactPhoneExt { get; set; }
 
         [JsonProperty("ContactEmailAddress")]
-        public string ContactEmailAddress { get; set; }
+        public string? ContactEmailAddress { get; set; }
 
         [JsonProperty("ContactRegistrationType")]
-        public string ContactRegistrationType { get; set; }
+        public string? ContactRegistrationType { get; set; }
 
         [JsonProperty("ContactRegistrationID")]
-        public string ContactRegistrationID { get; set; }
+        public string? ContactRegistrationID { get; set; }
 
         [JsonProperty("ContactFullAddress")]
-        public string ContactFullAddress { get; set; }
+        public string? ContactFullAddress { get; set; }
 
         [JsonProperty("ContactISOCountry")]
-        public string ContactISOCountry { get; set; }
+        public string? ContactISOCountry { get; set; }
 
         [JsonProperty("ContactAddressDetail")]
-        public ContactAddressDetail ContactAddressDetail { get; set; }
+        public ContactAddressDetail? ContactAddressDetail { get; set; }
     }
 
     public class Entitydata
     {
         [JsonProperty("keys")]
-        public Keys keys { get; set; }
+        public Keys? keys { get; set; }
 
         [JsonProperty("columns")]
-        public Columns columns { get; set; }
+        public Columns? columns { get; set; }
     }
 
     public class ExtendedData
@@ -529,22 +529,22 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
     public class Extendeddata2
     {
         [JsonProperty("@xmlns:xs")]
-        public string xmlnsxs { get; set; }
+        public string? xmlnsxs { get; set; }
 
         [JsonProperty("@xmlns:xsi")]
-        public string xmlnsxsi { get; set; }
+        public string? xmlnsxsi { get; set; }
 
         [JsonProperty("table")]
-        public Table table { get; set; }
+        public Table? table { get; set; }
     }
 
     public class Key
     {
         [JsonProperty("name")]
-        public string name { get; set; }
+        public string? name { get; set; }
 
         [JsonProperty("datatype")]
-        public string datatype { get; set; }
+        public string? datatype { get; set; }
 
         [JsonProperty("value")]
         public Value value { get; set; }
@@ -559,106 +559,106 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
     public class LineDTO
     {
         [JsonProperty("LineID")]
-        public string LineID { get; set; }
+        public string? LineID { get; set; }
 
         [JsonProperty("AddressID")]
-        public string AddressID { get; set; }
+        public string? AddressID { get; set; }
 
         [JsonProperty("InvolvementRoleID")]
-        public string InvolvementRoleID { get; set; }
+        public string? InvolvementRoleID { get; set; }
 
         [JsonProperty("ClaimID")]
-        public string ClaimID { get; set; }
+        public string? ClaimID { get; set; }
 
         [JsonProperty("ClaimantName")]
-        public string ClaimantName { get; set; }
+        public string? ClaimantName { get; set; }
 
         [JsonProperty("CauseOfLoss")]
-        public string CauseOfLoss { get; set; }
+        public string? CauseOfLoss { get; set; }
 
         [JsonProperty("LineType")]
-        public string LineType { get; set; }
+        public string? LineType { get; set; }
 
         [JsonProperty("LineTypeDescription")]
-        public string LineTypeDescription { get; set; }
+        public string? LineTypeDescription { get; set; }
 
         [JsonProperty("LineComplexity")]
-        public string LineComplexity { get; set; }
+        public string? LineComplexity { get; set; }
 
         [JsonProperty("LineRegulatoryState")]
-        public string LineRegulatoryState { get; set; }
+        public string? LineRegulatoryState { get; set; }
 
         [JsonProperty("HandlingStatus")]
-        public string HandlingStatus { get; set; }
+        public string? HandlingStatus { get; set; }
 
         [JsonProperty("LineCloseReason")]
-        public object LineCloseReason { get; set; }
+        public string? LineCloseReason { get; set; }
 
         [JsonProperty("ReserveCategory")]
-        public object ReserveCategory { get; set; }
+        public string? ReserveCategory { get; set; }
 
         [JsonProperty("LineRegulatoryCountry")]
-        public string LineRegulatoryCountry { get; set; }
+        public string? LineRegulatoryCountry { get; set; }
 
         [JsonProperty("LineRegulatoryCounty")]
-        public object LineRegulatoryCounty { get; set; }
+        public string? LineRegulatoryCounty { get; set; }
 
         [JsonProperty("LineUOM")]
-        public string LineUOM { get; set; }
+        public string? LineUOM { get; set; }
 
         [JsonProperty("LineFinancialStatus")]
-        public string LineFinancialStatus { get; set; }
+        public string? LineFinancialStatus { get; set; }
 
         [JsonProperty("LineFinancialCloseReason")]
-        public object LineFinancialCloseReason { get; set; }
+        public string? LineFinancialCloseReason { get; set; }
 
         [JsonProperty("LineFinancialsCloseDate")]
-        public object LineFinancialsCloseDate { get; set; }
+        public string? LineFinancialsCloseDate { get; set; }
 
         [JsonProperty("LineFinancialsReopenDate")]
-        public object LineFinancialsReopenDate { get; set; }
+        public string? LineFinancialsReopenDate { get; set; }
 
         [JsonProperty("CoverageMatchStatus")]
-        public string CoverageMatchStatus { get; set; }
+        public string? CoverageMatchStatus { get; set; }
 
         [JsonProperty("RecoveryIndicator")]
         public bool? RecoveryIndicator { get; set; }
 
         [JsonProperty("LegacySalvageStatus")]
-        public object LegacySalvageStatus { get; set; }
+        public string? LegacySalvageStatus { get; set; }
 
         [JsonProperty("LegacySubrogationStatus")]
-        public object LegacySubrogationStatus { get; set; }
+        public string? LegacySubrogationStatus { get; set; }
 
         [JsonProperty("AdditionalFinalPayment")]
-        public object AdditionalFinalPayment { get; set; }
+        public string? AdditionalFinalPayment { get; set; }
 
         [JsonProperty("LineReserveMethod")]
-        public object LineReserveMethod { get; set; }
+        public string? LineReserveMethod { get; set; }
 
         [JsonProperty("SettlementMethod")]
-        public object SettlementMethod { get; set; }
+        public string? SettlementMethod { get; set; }
 
         [JsonProperty("ExpenseOnlyIndicator")]
         public bool? ExpenseOnlyIndicator { get; set; }
 
         [JsonProperty("SIUIndicator")]
-        public object SIUIndicator { get; set; }
+        public string? SIUIndicator { get; set; }
 
         [JsonProperty("NatureOfOperation")]
-        public object NatureOfOperation { get; set; }
+        public string? NatureOfOperation { get; set; }
 
         [JsonProperty("PrimaryExcessLine")]
-        public object PrimaryExcessLine { get; set; }
+        public string? PrimaryExcessLine { get; set; }
 
         [JsonProperty("LineLocationOfLoss")]
-        public object LineLocationOfLoss { get; set; }
+        public string? LineLocationOfLoss { get; set; }
 
         [JsonProperty("PropertyType")]
-        public object PropertyType { get; set; }
+        public string PropertyType { get; set; }
 
         [JsonProperty("LossCharacteristic")]
-        public object LossCharacteristic { get; set; }
+        public string LossCharacteristic { get; set; }
 
         [JsonProperty("ThirdPartyIndicator")]
         public bool? ThirdPartyIndicator { get; set; }
@@ -673,13 +673,13 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public bool? AutomatedLineGenIndicator { get; set; }
 
         [JsonProperty("ContributingFactor")]
-        public object ContributingFactor { get; set; }
+        public string? ContributingFactor { get; set; }
 
         [JsonProperty("DamageDescription")]
-        public object DamageDescription { get; set; }
+        public string? DamageDescription { get; set; }
 
         [JsonProperty("VehicleLocationDetail")]
-        public object VehicleLocationDetail { get; set; }
+        public string? VehicleLocationDetail { get; set; }
 
         [JsonProperty("MedicareIndicator")]
         public bool? MedicareIndicator { get; set; }
@@ -688,145 +688,145 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public bool? LineTypeOverrideIndicator { get; set; }
 
         [JsonProperty("LineTypeOverridingOrgEntity")]
-        public object LineTypeOverridingOrgEntity { get; set; }
+        public string? LineTypeOverridingOrgEntity { get; set; }
 
         [JsonProperty("LastTransactionID")]
-        public string LastTransactionID { get; set; }
+        public string? LastTransactionID { get; set; }
 
         [JsonProperty("LiableItemID")]
-        public object LiableItemID { get; set; }
+        public string? LiableItemID { get; set; }
     }
 
     public class Originalvalue
     {
         [JsonProperty("@xsi:nil")]
-        public string xsinil { get; set; }
+        public string? xsinil { get; set; }
     }
 
     public class ParticipantDataObject
     {
         [JsonProperty("ParticipantID")]
-        public string ParticipantID { get; set; }
+        public string? ParticipantID { get; set; }
 
         [JsonProperty("ClaimID")]
-        public string ClaimID { get; set; }
+        public string? ClaimID { get; set; }
 
         [JsonProperty("PartyID")]
-        public string PartyID { get; set; }
+        public string? PartyID { get; set; }
 
         [JsonProperty("PolicyAdded")]
         public bool? PolicyAdded { get; set; }
 
         [JsonProperty("PrefNameID")]
-        public string PrefNameID { get; set; }
+        public string? PrefNameID { get; set; }
 
         [JsonProperty("PrefAddressID")]
-        public string PrefAddressID { get; set; }
+        public string? PrefAddressID { get; set; }
 
         [JsonProperty("PrefEmailID")]
-        public string PrefEmailID { get; set; }
+        public string? PrefEmailID { get; set; }
 
         [JsonProperty("PrefPhoneID")]
-        public string PrefPhoneID { get; set; }
+        public string? PrefPhoneID { get; set; }
 
         [JsonProperty("EFTActive")]
-        public object EFTActive { get; set; }
+        public string? EFTActive { get; set; }
 
         [JsonProperty("ContactNote")]
-        public object ContactNote { get; set; }
+        public string? ContactNote { get; set; }
 
         [JsonProperty("DriversLicenseNumber")]
-        public object DriversLicenseNumber { get; set; }
+        public string? DriversLicenseNumber { get; set; }
 
         [JsonProperty("DriverState")]
-        public object DriverState { get; set; }
+        public string? DriverState { get; set; }
 
         [JsonProperty("AlternateID")]
-        public object AlternateID { get; set; }
+        public string? AlternateID { get; set; }
 
         [JsonProperty("AlternateIDType")]
-        public object AlternateIDType { get; set; }
+        public string? AlternateIDType { get; set; }
 
         [JsonProperty("BeneDependencyType")]
-        public object BeneDependencyType { get; set; }
+        public string? BeneDependencyType { get; set; }
 
         [JsonProperty("DriverCountry")]
-        public object DriverCountry { get; set; }
+        public string DriverCountry { get; set; }
 
         [JsonProperty("ColBargAgreementCode")]
-        public object ColBargAgreementCode { get; set; }
+        public string? ColBargAgreementCode { get; set; }
 
         [JsonProperty("CIBRequestDate")]
-        public object CIBRequestDate { get; set; }
+        public string CIBRequestDate { get; set; }
 
         [JsonProperty("ReportedAge")]
-        public object ReportedAge { get; set; }
+        public string? ReportedAge { get; set; }
 
         [JsonProperty("DateOfBirth")]
-        public object DateOfBirth { get; set; }
+        public string? DateOfBirth { get; set; }
 
         [JsonProperty("TaxID")]
-        public string TaxID { get; set; }
+        public string? TaxID { get; set; }
 
         [JsonProperty("PartialTaxID")]
-        public object PartialTaxID { get; set; }
+        public string? PartialTaxID { get; set; }
 
         [JsonProperty("SSN")]
-        public object SSN { get; set; }
+        public string? SSN { get; set; }
 
         [JsonProperty("Gender")]
-        public object Gender { get; set; }
+        public string? Gender { get; set; }
 
         [JsonProperty("DependentsUnder18")]
-        public object DependentsUnder18 { get; set; }
+        public string? DependentsUnder18 { get; set; }
 
         [JsonProperty("EmployerUINumber")]
-        public object EmployerUINumber { get; set; }
+        public string? EmployerUINumber { get; set; }
 
         [JsonProperty("PreferredContactType")]
-        public string PreferredContactType { get; set; }
+        public string? PreferredContactType { get; set; }
 
         [JsonProperty("AnalyticScore")]
-        public object AnalyticScore { get; set; }
+        public string? AnalyticScore { get; set; }
 
         [JsonProperty("LastTransactionID")]
-        public string LastTransactionID { get; set; }
+        public string? LastTransactionID { get; set; }
 
         [JsonProperty("ParticipantRolesDTO")]
-        public List<ParticipantRolesDTO> ParticipantRolesDTO { get; set; }
+        public List<ParticipantRolesDTO>? ParticipantRolesDTO { get; set; }
 
         [JsonProperty("ParticipantFullName")]
-        public string ParticipantFullName { get; set; }
+        public string? ParticipantFullName { get; set; }
 
         [JsonProperty("InsuranceExist")]
-        public object InsuranceExist { get; set; }
+        public string? InsuranceExist { get; set; }
 
         [JsonProperty("ThirdPartyPolicyNumber")]
-        public object ThirdPartyPolicyNumber { get; set; }
+        public string? ThirdPartyPolicyNumber { get; set; }
 
         [JsonProperty("CoverageConfirmed")]
-        public object CoverageConfirmed { get; set; }
+        public string? CoverageConfirmed { get; set; }
 
         [JsonProperty("ParticipantNameDetailDTO")]
-        public ParticipantNameDetailDTO ParticipantNameDetailDTO { get; set; }
+        public ParticipantNameDetailDTO? ParticipantNameDetailDTO { get; set; }
     }
 
     public class ParticipantNameDetailDTO
     {
         [JsonProperty("PrefixCode")]
-        public object PrefixCode { get; set; }
+        public string PrefixCode { get; set; }
 
         [JsonProperty("SuffixCode")]
-        public object SuffixCode { get; set; }
+        public string SuffixCode { get; set; }
 
         [JsonProperty("FirstName")]
-        public object FirstName { get; set; }
+        public string FirstName { get; set; }
 
         [JsonProperty("MiddleName")]
-        public object MiddleName { get; set; }
+        public string MiddleName { get; set; }
 
         [JsonProperty("LastName")]
-        public object LastName { get; set; }
+        public string LastName { get; set; }
 
         [JsonProperty("CountryCode")]
         public string CountryCode { get; set; }
@@ -835,64 +835,64 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
     public class ParticipantRolesDTO
     {
         [JsonProperty("ParticipantRoleID")]
-        public string ParticipantRoleID { get; set; }
+        public string? ParticipantRoleID { get; set; }
 
         [JsonProperty("ParticipantID")]
-        public string ParticipantID { get; set; }
+        public string? ParticipantID { get; set; }
 
         [JsonProperty("ClaimID")]
-        public string ClaimID { get; set; }
+        public string? ClaimID { get; set; }
 
         [JsonProperty("ParticipantRole")]
-        public string ParticipantRole { get; set; }
+        public string? ParticipantRole { get; set; }
 
         [JsonProperty("ActivationDate")]
-        public object ActivationDate { get; set; }
+        public string? ActivationDate { get; set; }
 
         [JsonProperty("DeactivationDate")]
-        public object DeactivationDate { get; set; }
+        public string? DeactivationDate { get; set; }
 
         [JsonProperty("LastTransactionID")]
-        public string LastTransactionID { get; set; }
+        public string? LastTransactionID { get; set; }
     }
 
     public class PaymentDetailDTO
     {
         [JsonProperty("PaymentDetailID")]
-        public string PaymentDetailID { get; set; }
+        public string? PaymentDetailID { get; set; }
 
         [JsonProperty("LineID")]
-        public string LineID { get; set; }
+        public string? LineID { get; set; }
 
         [JsonProperty("InvoiceDetailID")]
-        public object InvoiceDetailID { get; set; }
+        public string? InvoiceDetailID { get; set; }
 
         [JsonProperty("RecurringPaymentDetailID")]
-        public object RecurringPaymentDetailID { get; set; }
+        public string? RecurringPaymentDetailID { get; set; }
 
         [JsonProperty("PaymentID")]
-        public string PaymentID { get; set; }
+        public string? PaymentID { get; set; }
 
         [JsonProperty("ItemArticleID")]
-        public object ItemArticleID { get; set; }
+        public string? ItemArticleID { get; set; }
 
         [JsonProperty("PaymentFrequency")]
-        public object PaymentFrequency { get; set; }
+        public string? PaymentFrequency { get; set; }
 
         [JsonProperty("FinancialCategory")]
-        public string FinancialCategory { get; set; }
+        public string? FinancialCategory { get; set; }
 
         [JsonProperty("BenefitOffset")]
-        public object BenefitOffset { get; set; }
+        public string? BenefitOffset { get; set; }
 
         [JsonProperty("Service")]
-        public string Service { get; set; }
+        public string? Service { get; set; }
 
         [JsonProperty("ServiceStartDate")]
-        public object ServiceStartDate { get; set; }
+        public string? ServiceStartDate { get; set; }
 
         [JsonProperty("ServiceEndDate")]
-        public object ServiceEndDate { get; set; }
+        public string? ServiceEndDate { get; set; }
 
         [JsonProperty("LumpSumIndicator")]
         public bool? LumpSumIndicator { get; set; }
@@ -901,40 +901,40 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public ApprovedAmount ApprovedAmount { get; set; }
 
         [JsonProperty("ApprovedAmountWithoutVAT")]
-        public object ApprovedAmountWithoutVAT { get; set; }
+        public string? ApprovedAmountWithoutVAT { get; set; }
 
         [JsonProperty("VATPercentage")]
-        public object VATPercentage { get; set; }
+        public string? VATPercentage { get; set; }
 
         [JsonProperty("VATNumeric")]
-        public object VATNumeric { get; set; }
+        public string? VATNumeric { get; set; }
 
         [JsonProperty("MedicalEvalutator")]
-        public object MedicalEvalutator { get; set; }
+        public string? MedicalEvalutator { get; set; }
 
         [JsonProperty("DeductionReason")]
-        public object DeductionReason { get; set; }
+        public string? DeductionReason { get; set; }
 
         [JsonProperty("Reportable1099")]
-        public string Reportable1099 { get; set; }
+        public string? Reportable1099 { get; set; }
 
         [JsonProperty("ErodeLimit")]
         public bool? ErodeLimit { get; set; }
 
         [JsonProperty("TaxType")]
-        public object TaxType { get; set; }
+        public string? TaxType { get; set; }
 
         [JsonProperty("GSTType")]
-        public object GSTType { get; set; }
+        public string? GSTType { get; set; }
 
         [JsonProperty("LastTransactionID")]
-        public string LastTransactionID { get; set; }
+        public string? LastTransactionID { get; set; }
 
         [JsonProperty("VATMode")]
-        public object VATMode { get; set; }
+        public string? VATMode { get; set; }
 
         [JsonProperty("VATType")]
-        public object VATType { get; set; }
+        public string? VATType { get; set; }
 
         [JsonProperty("VATApplicableComponent")]
         public bool? VATApplicableComponent { get; set; }
@@ -943,25 +943,25 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public bool? InactiveIndicator { get; set; }
 
         [JsonProperty("NumberOfVisits")]
-        public object NumberOfVisits { get; set; }
+        public string? NumberOfVisits { get; set; }
 
         [JsonProperty("ParticipantRoleID")]
-        public string ParticipantRoleID { get; set; }
+        public string? ParticipantRoleID { get; set; }
 
         [JsonProperty("LastUpdate")]
         public DateTime? LastUpdate { get; set; }
 
         [JsonProperty("ExtendedData")]
-        public object ExtendedData { get; set; }
+        public string? ExtendedData { get; set; }
     }
 
     public class PaymentHeader
     {
         [JsonProperty("PaymentID")]
-        public string PaymentID { get; set; }
+        public string? PaymentID { get; set; }
 
         [JsonProperty("RecurringPaymentID")]
-        public object RecurringPaymentID { get; set; }
+        public string? RecurringPaymentID { get; set; }
 
         [JsonProperty("IssueDate")]
         public DateTime? IssueDate { get; set; }
@@ -973,85 +973,85 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public bool? AuthorityTaskExist { get; set; }
 
         [JsonProperty("PaymentMethod")]
-        public string PaymentMethod { get; set; }
+        public string? PaymentMethod { get; set; }
 
         [JsonProperty("StopVoid")]
-        public object StopVoid { get; set; }
+        public string? StopVoid { get; set; }
 
         [JsonProperty("StopVoidReason")]
-        public object StopVoidReason { get; set; }
+        public string? StopVoidReason { get; set; }
 
         [JsonProperty("PaymentType")]
-        public string PaymentType { get; set; }
+        public string? PaymentType { get; set; }
 
         [JsonProperty("AttachmentIndicator")]
         public bool? AttachmentIndicator { get; set; }
 
         [JsonProperty("PrimaryPayeeInsuranceInvolvementID")]
-        public string PrimaryPayeeInsuranceInvolvementID { get; set; }
+        public string? PrimaryPayeeInsuranceInvolvementID { get; set; }
 
         [JsonProperty("MailToInsuranceInvolvementID")]
-        public string MailToInsuranceInvolvementID { get; set; }
+        public string? MailToInsuranceInvolvementID { get; set; }
 
         [JsonProperty("PrimaryPayeeClientID")]
-        public string PrimaryPayeeClientID { get; set; }
+        public string? PrimaryPayeeClientID { get; set; }
 
         [JsonProperty("MailTOClientID")]
-        public string MailTOClientID { get; set; }
+        public string? MailTOClientID { get; set; }
 
         [JsonProperty("ExplainationOfBenefitComments")]
-        public object ExplainationOfBenefitComments { get; set; }
+        public string? ExplainationOfBenefitComments { get; set; }
 
         [JsonProperty("BankAccountNumber")]
-        public string BankAccountNumber { get; set; }
+        public string? BankAccountNumber { get; set; }
 
         [JsonProperty("BankTransitNumber")]
-        public string BankTransitNumber { get; set; }
+        public string? BankTransitNumber { get; set; }
 
         [JsonProperty("HoldReason")]
-        public object HoldReason { get; set; }
+        public string? HoldReason { get; set; }
 
         [JsonProperty("HandlingNotes")]
-        public object HandlingNotes { get; set; }
+        public string? HandlingNotes { get; set; }
 
         [JsonProperty("ElectronFundsTransferID")]
-        public object ElectronFundsTransferID { get; set; }
+        public string? ElectronFundsTransferID { get; set; }
 
         [JsonProperty("PayeeName")]
-        public object PayeeName { get; set; }
+        public string? PayeeName { get; set; }
 
         [JsonProperty("MailToName")]
-        public string MailToName { get; set; }
+        public string? MailToName { get; set; }
 
         [JsonProperty("MailToAddressID")]
-        public string MailToAddressID { get; set; }
+        public string? MailToAddressID { get; set; }
 
         [JsonProperty("ReconciliationStatus")]
-        public object ReconciliationStatus { get; set; }
+        public string? ReconciliationStatus { get; set; }
 
         [JsonProperty("PaymentNumber")]
-        public string PaymentNumber { get; set; }
+        public string? PaymentNumber { get; set; }
 
         [JsonProperty("PaymentStatus")]
-        public string PaymentStatus { get; set; }
+        public string? PaymentStatus { get; set; }
 
         [JsonProperty("CheckStatus")]
-        public string CheckStatus { get; set; }
+        public string? CheckStatus { get; set; }
 
         [JsonProperty("PrinterLocation")]
-        public object PrinterLocation { get; set; }
+        public string? PrinterLocation { get; set; }
 
         [JsonProperty("CheckMemo")]
-        public object CheckMemo { get; set; }
+        public string? CheckMemo { get; set; }
 
         [JsonProperty("PaymentGroupNumber")]
-        public object PaymentGroupNumber { get; set; }
+        public string? PaymentGroupNumber { get; set; }
 
         [JsonProperty("InvoiceID")]
-        public object InvoiceID { get; set; }
+        public string? InvoiceID { get; set; }
 
         [JsonProperty("PaymentCurrency")]
-        public string PaymentCurrency { get; set; }
+        public string? PaymentCurrency { get; set; }
 
         [JsonProperty("TotalApprovedAmount")]
         public double? TotalApprovedAmount { get; set; }
@@ -1060,43 +1060,43 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public DateTime? CoversionDate { get; set; }
 
         [JsonProperty("Language")]
-        public string Language { get; set; }
+        public string? Language { get; set; }
 
         [JsonProperty("OfficeOrgEntityID")]
-        public string OfficeOrgEntityID { get; set; }
+        public string? OfficeOrgEntityID { get; set; }
 
         [JsonProperty("UserOrgEntityID")]
-        public string UserOrgEntityID { get; set; }
+        public string? UserOrgEntityID { get; set; }
 
         [JsonProperty("CustomCheckPartyId")]
-        public object CustomCheckPartyId { get; set; }
+        public string? CustomCheckPartyId { get; set; }
 
         [JsonProperty("LastTransactionID")]
         public string LastTransactionID { get; set; }
 
         [JsonProperty("ReportablePartyID")]
-        public string ReportablePartyID { get; set; }
+        public string? ReportablePartyID { get; set; }
 
         [JsonProperty("LastUpdate")]
         public DateTime? LastUpdate { get; set; }
 
         [JsonProperty("ExtendedData")]
-        public object ExtendedData { get; set; }
+        public string? ExtendedData { get; set; }
     }
 
-    public class PaymentPayeeDataObjectsList
+    public class PaymentPayeeDataObjectList
     {
         [JsonProperty("PaymentPayeeID")]
-        public string PaymentPayeeID { get; set; }
+        public string? PaymentPayeeID { get; set; }
 
         [JsonProperty("PaymentID")]
-        public string PaymentID { get; set; }
+        public string? PaymentID { get; set; }
 
         [JsonProperty("InsuranceInvolvementID")]
-        public string InsuranceInvolvementID { get; set; }
+        public string? InsuranceInvolvementID { get; set; }
 
         [JsonProperty("ClientID")]
-        public string ClientID { get; set; }
+        public string? ClientID { get; set; }
 
         [JsonProperty("DateSentToOFAC")]
         public DateTime? DateSentToOFAC { get; set; }
@@ -1111,64 +1111,64 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public int? BatchNumber { get; set; }
 
         [JsonProperty("LastTransactionID")]
-        public string LastTransactionID { get; set; }
+        public string? LastTransactionID { get; set; }
     }
 
     public class PerformerDTO
     {
         [JsonProperty("PerformerID")]
-        public string PerformerID { get; set; }
+        public string? PerformerID { get; set; }
 
         [JsonProperty("LineID")]
-        public object LineID { get; set; }
+        public string? LineID { get; set; }
 
         [JsonProperty("ClaimantRoleID")]
-        public object ClaimantRoleID { get; set; }
+        public string? ClaimantRoleID { get; set; }
 
         [JsonProperty("PerformerActivationDate")]
         public DateTime? PerformerActivationDate { get; set; }
 
         [JsonProperty("PerformerDeactivationDate")]
-        public object PerformerDeactivationDate { get; set; }
+        public string? PerformerDeactivationDate { get; set; }
 
         [JsonProperty("PerformerRole")]
-        public string PerformerRole { get; set; }
+        public string? PerformerRole { get; set; }
 
         [JsonProperty("ClaimID")]
-        public string ClaimID { get; set; }
+        public string? ClaimID { get; set; }
 
         [JsonProperty("OrganizationEntityID")]
-        public string OrganizationEntityID { get; set; }
+        public string? OrganizationEntityID { get; set; }
 
         [JsonProperty("LastTransactionID")]
-        public string LastTransactionID { get; set; }
+        public string? LastTransactionID { get; set; }
 
         [JsonProperty("OrganizationType")]
-        public object OrganizationType { get; set; }
+        public string? OrganizationType { get; set; }
 
         [JsonProperty("OrganizationCorporateName")]
-        public object OrganizationCorporateName { get; set; }
+        public string? OrganizationCorporateName { get; set; }
 
         [JsonProperty("OrganizationFirstName")]
-        public object OrganizationFirstName { get; set; }
+        public string? OrganizationFirstName { get; set; }
 
         [JsonProperty("OrganizationMiddleName")]
-        public object OrganizationMiddleName { get; set; }
+        public string? OrganizationMiddleName { get; set; }
 
         [JsonProperty("OrganizationLastName")]
-        public object OrganizationLastName { get; set; }
+        public string? OrganizationLastName { get; set; }
 
         [JsonProperty("OrganizationActivationDate")]
         public DateTime? OrganizationActivationDate { get; set; }
 
         [JsonProperty("OrganizationDeactivationDate")]
-        public object OrganizationDeactivationDate { get; set; }
+        public string? OrganizationDeactivationDate { get; set; }
 
         [JsonProperty("OrganizationEmail")]
-        public object OrganizationEmail { get; set; }
+        public string? OrganizationEmail { get; set; }
 
         [JsonProperty("PerformerFullName")]
-        public string PerformerFullName { get; set; }
+        public string? PerformerFullName { get; set; }
 
         [JsonProperty("CanUserViewParty")]
         public bool? CanUserViewParty { get; set; }
@@ -1177,82 +1177,82 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
         public bool? CanUserListParty { get; set; }
 
         [JsonProperty("PerformerNameDetailDTO")]
-        public PerformerNameDetailDTO PerformerNameDetailDTO { get; set; }
+        public PerformerNameDetailDTO? PerformerNameDetailDTO { get; set; }
     }
 
     public class PerformerNameDetailDTO
     {
         [JsonProperty("PrefixCode")]
-        public object PrefixCode { get; set; }
+        public string? PrefixCode { get; set; }
 
         [JsonProperty("SuffixCode")]
-        public object SuffixCode { get; set; }
+        public string? SuffixCode { get; set; }
 
         [JsonProperty("FirstName")]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [JsonProperty("MiddleName")]
-        public object MiddleName { get; set; }
+        public string? MiddleName { get; set; }
 
         [JsonProperty("LastName")]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [JsonProperty("CountryCode")]
-        public string CountryCode { get; set; }
+        public string? CountryCode { get; set; }
     }
 
     public class DTOModel
     {
         [JsonProperty("PaymentHeader")]
-        public PaymentHeader PaymentHeader { get; set; }
+        public PaymentHeader? PaymentHeader { get; set; }
 
         [JsonProperty("ParticipantDataObject")]
-        public ParticipantDataObject ParticipantDataObject { get; set; }
+        public ParticipantDataObject? ParticipantDataObject { get; set; }
 
         [JsonProperty("PaymentPayeeDataObjectsList")]
-        public List<PaymentPayeeDataObjectsList> PaymentPayeeDataObjectsList { get; set; }
+        public List<PaymentPayeeDataObjectList>? PaymentPayeeDataObjectsList { get; set; }
 
         [JsonProperty("ClaimDTO")]
-        public ClaimDTO ClaimDTO { get; set; }
+        public ClaimDTO? ClaimDTO { get; set; }
 
         [JsonProperty("LineDTOs")]
-        public List<LineDTO> LineDTOs { get; set; }
+        public List<LineDTO>? LineDTOs { get; set; }
 
         [JsonProperty("ContactInfoDTO")]
-        public ContactInfoDTO ContactInfoDTO { get; set; }
+        public ContactInfoDTO? ContactInfoDTO { get; set; }
 
         [JsonProperty("PerformerDTO")]
-        public PerformerDTO PerformerDTO { get; set; }
+        public PerformerDTO? PerformerDTO { get; set; }
 
         [JsonProperty("PaymentDetailDTOs")]
-        public List<PaymentDetailDTO> PaymentDetailDTOs { get; set; }
+        public List<PaymentDetailDTO>? PaymentDetailDTOs { get; set; }
 
         [JsonProperty("AddressDTO_MailTo")]
-        public AddressDTOMailTo AddressDTO_MailTo { get; set; }
+        public AddressDTOMailTo? AddressDTO_MailTo { get; set; }
 
         [JsonProperty("__extendedData")]
-        public ExtendedData __extendedData { get; set; }
+        public ExtendedData? __extendedData { get; set; }
     }
 
     public class Table
     {
         [JsonProperty("name")]
-        public string name { get; set; }
+        public string? name { get; set; }
 
         [JsonProperty("entitydata")]
-        public Entitydata entitydata { get; set; }
+        public Entitydata? entitydata { get; set; }
     }
 
     public class Value
     {
         [JsonProperty("@xsi:type")]
-        public string xsitype { get; set; }
+        public string? xsitype { get; set; }
 
         [JsonProperty("#text")]
-        public string text { get; set; }
+        public string? text { get; set; }
 
         [JsonProperty("@xsi:nil")]
-        public string xsinil { get; set; }
+        public string? xsinil { get; set; }
     }
 
 
