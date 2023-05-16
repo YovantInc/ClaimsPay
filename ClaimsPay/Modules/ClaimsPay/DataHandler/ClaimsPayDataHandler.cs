@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Runtime.InteropServices;
 using ClaimsPay.Modules.ClaimsPay.Models.Webhook;
+using System.Linq.Expressions;
 
 namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 {
@@ -35,11 +36,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         HttpClient objhttpClient = new();
         Helper helper = new Helper();
         string? baseURL = string.Empty;
-        string? ClaimsPayType = string.Empty;
-        string? ClaimsPayTypeRequest = string.Empty;
-        string? LoanAccountNumber = string.Empty;
-        string? ClaimsPayMethod = string.Empty;
-        string? approvalRequired = string.Empty;
+      
 
         #endregion
 
@@ -85,7 +82,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             string? LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
             var config = helper.SetNlogConfig(LogPath!, "CreatePaymentMaster");
             var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
-
+          
             RestData? objRestData = new RestData();
             Str_Json? objStrJson = new Str_Json();
             DTOModel? objDTOModel = new DTOModel();
@@ -102,10 +99,9 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 //log input recieved from DC Claims
                 _logger.Info(requestJson.Root);
 
-               
-               
-                var result = await helper.GetPartyDetails(requestJson["ParticipantDataObject"]["PartyID"].ToString(), config);
-                objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(result.ToString())!;
+
+
+
 
                 objDTOModel = JsonConvert.DeserializeObject<DTOModel>(requestJson.ToString());
 
@@ -113,11 +109,15 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
 
                 if (sessionID.Length > 0)
-                {    
-
+                {
+                    string? ClaimsPayType = string.Empty;
+                    string? ClaimsPayTypeRequest = string.Empty;
+                    string? LoanAccountNumber = string.Empty;
+                    string? ClaimsPayMethod = string.Empty;
+                    bool approvalRequired = false;
                     //Read Payment Headers
                     JObject? objextendedData = JObject.Parse(requestJson["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].ToString());
-                    await helper.ReadClaimsPayFields(objextendedData!);
+                    helper.ReadClaimsPayFields(objextendedData!,ref ClaimsPayType, ref ClaimsPayTypeRequest, ref LoanAccountNumber, ref ClaimsPayMethod, ref approvalRequired);
 
 
                     //Mapping From extended data
@@ -126,91 +126,28 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     objStrJson.PM_PaymentID = objDTOModel.PaymentHeader.PaymentID;
                     objStrJson.PM_Amount = objDTOModel.PaymentHeader.TotalApprovedAmount;
 
-                    if (ClaimsPayType == Constants.C_KEY_Contacts)
-                    {
-                        objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_Value;
-                    }
-                    else if (ClaimsPayType == Constants.C_KEY_Other)
-                    {
-                        objStrJson.PM_PaymentType = Constants.C_KEY_Other_Value;
-                    }
-                    else if (ClaimsPayType == Constants.C_KEY_Vendor)
-                    {
-                        objStrJson.PM_PaymentType = Constants.C_KEY_Vendor_Value;
-                    }
-                    else if (ClaimsPayType == Constants.C_KEY_Lienholder)
-                    {
-                        objStrJson.PM_PaymentType = Constants.C_KEY_Lienholder_Value;
-                    }
-                    else if (ClaimsPayType == Constants.C_KEY_Contacts_and_Vendor)
-                    {
-                        objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_and_Vendor_Value;
-                    }
-                    else if (ClaimsPayType == Constants.C_KEY_Contacts_and_Mortgagee)
-                    {
-                        objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_and_Mortgagee_Value;
-                    }
+                    //Mapping From Performer DTO
+                    objStrJson.PM_UserId = objDTOModel.PerformerDTO.PerformerID;
+                    objStrJson.PM_User_FirstName = objDTOModel.PerformerDTO.PerformerNameDetailDTO.FirstName;
+                    objStrJson.PM_User_LastName = objDTOModel.PerformerDTO.PerformerNameDetailDTO.LastName;
+                    var result = await helper.GetPartyDetails(objDTOModel.PerformerDTO.OrganizationEntityID.ToString(), config);
+                    objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(result.ToString())!;
+                    objStrJson.PM_User_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail.Where(a => a.isPrimary = true).Select(b => b.emailAddress).FirstOrDefault().ToString();
 
-                    if (ClaimsPayTypeRequest == Constants.C_KEY_Recoverable_Depreciation)
-                    {
-                        objStrJson.PM_RequestReason = Constants.C_KEY_Recoverable_Depreciation_Value;
-                    }
-                    else if (ClaimsPayTypeRequest == Constants.C_KEY_Emergency_Funds)
-                    {
-                        objStrJson.PM_RequestReason = Constants.C_KEY_Emergency_Funds_Value;
-                    }
-                    else if (ClaimsPayTypeRequest == Constants.C_KEY_Loss_Payment)
-                    {
-                        objStrJson.PM_RequestReason = Constants.C_KEY_Loss_Payment_Value;
-                    }
-                    else if (ClaimsPayTypeRequest == Constants.C_KEY_Supplemental_Payment)
-                    {
-                        objStrJson.PM_RequestReason = Constants.C_KEY_Supplemental_Payment_Value;
-                    }
-
-                    //Mapping For payment method Detail
-                    if (ClaimsPayMethod == Constants.C_KEY_Mail_Prepaid_Card)
-                    {
-                        objStrJson.PMETHOD = Constants.C_KEY_Mail_Prepaid_Card_Value;
-                    }
-                    else if (ClaimsPayMethod == Constants.C_KEY_Virtual_Card)
-                    {
-                        objStrJson.PMETHOD = Constants.C_KEY_Virtual_Card_Value;
-                    }
-                    else if (ClaimsPayMethod == Constants.C_KEY_Debit_Card)
-                    {
-                        objStrJson.PMETHOD = Constants.C_KEY_Debit_Card_Value;
-                    }
-                    else if (ClaimsPayMethod == Constants.C_KEY_Field_Payment)
-                    {
-                        objStrJson.PMETHOD = Constants.C_KEY_Field_Payment_Value;
-                    }
-                    else if (ClaimsPayMethod == Constants.C_KEY_Check)
-                    {
-                        objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
-                    }
-                    else if (ClaimsPayMethod == Constants.C_KEY_Direct_Deposit)
-                    {
-                        objStrJson.PMETHOD = Constants.C_KEY_Direct_Deposit_Value;
-                    }
-                    else if (ClaimsPayMethod == Constants.C_KEY_Instant_Prepaid_Card)
-                    {
-                        objStrJson.PMETHOD = Constants.C_KEY_Instant_Prepaid_Card_Value;
-                    }
-                    else if (ClaimsPayMethod == Constants.C_KEY_Let_Customer_Pickup)
-                    {
-                        objStrJson.PMETHOD = Constants.C_KEY_Let_Customer_Pickup_Value;
-                    }
-                    else if (ClaimsPayMethod == Constants.C_KEY_Prepaid_Card)
-                    {
-                        objStrJson.PMETHOD = Constants.C_KEY_Prepaid_Card_Value;
-                    }
+                    //Mapping From AddressDTO_MailTo
+                    objStrJson.PMA_Street = string.Concat(objDTOModel.AddressDTO_MailTo.LocationDetailsLine1.ToString(), " "
+                        , objDTOModel.AddressDTO_MailTo.LocationDetailsLine2 == null ? "" : objDTOModel.AddressDTO_MailTo.LocationDetailsLine2);
+                    objStrJson.PMA_City = objDTOModel.AddressDTO_MailTo.AdminDivisionPrimary;
+                    objStrJson.PMA_State = await helper.GetState(objDTOModel.AddressDTO_MailTo.NationalDivisionPrimary);
+                    objStrJson.PMA_Zipcode = objDTOModel.AddressDTO_MailTo.PostalCode;
+                    objStrJson.PMA_Country = await helper.GetCountry(objDTOModel.AddressDTO_MailTo.CountryCode.ToString());
+                    objStrJson.PMA_MailTo = objDTOModel.PaymentHeader.MailToName;
 
                     if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Mortgagee_Value)
                     {
                         objStrJson.PA_City = objDTOModel.AddressDTO_MailTo.AdminDivisionPrimary;
-                        objStrJson.PA_Country = "USA";
-                        objStrJson.PA_State = "CA";
+                        objStrJson.PA_Country = await helper.GetCountry(objDTOModel.AddressDTO_MailTo.CountryCode.ToString());
+                        objStrJson.PA_State = await helper.GetState(objDTOModel.AddressDTO_MailTo.NationalDivisionPrimary);
                         objStrJson.PA_Street = objDTOModel.AddressDTO_MailTo.LocationDetailsLine1;
                         objStrJson.PA_Zipcode = objDTOModel.AddressDTO_MailTo.PostalCode;
                     }
@@ -221,288 +158,238 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     objStrJson.CL_ClaimNumber = objDTOModel.ClaimDTO.ClaimID;
                     objStrJson.CL_DateofLoss = Convert.ToDateTime(await helper.GetLossDetails(objDTOModel.ClaimDTO.LossID, config)).ToString("yyyy-MM-dd");
                     objStrJson.CL_PolicyNumber = objDTOModel.ClaimDTO.PolicyID;
-                    // objStrJson.CL_DateofLoss = objDTOModel.ClaimDTO.LossID;
 
                     //Mapping From Line DTO
                     objStrJson.CL_CauseofLoss = await helper.GetCauseOfLoss(objDTOModel.LineDTOs[0].CauseOfLoss);
 
-                    //Mapping From ParticipantDTO
-                    objStrJson.PCON_ContactId = objDTOModel.ParticipantDataObject.PartyID;
-                    objStrJson.SCON_ContactId = null;
-                    objStrJson.BUS_BusinessId = objDTOModel.ParticipantDataObject.PartyID;
-                    objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
-                    objStrJson.BUS_TIN = objDTOModel.ParticipantDataObject.TaxID;
 
-                    //Get Party Details 
-                    if (!string.IsNullOrEmpty(objStrJson.PCON_ContactId))
+
+                    switch (ClaimsPayType)
                     {
-                        var responsePartyDetails = await helper.GetPartyDetails(objStrJson.PCON_ContactId, config);
-                        objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(responsePartyDetails.ToString());
+                        case Constants.C_KEY_Contacts:
+                            objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_Value;
+                            break;
+                        case Constants.C_KEY_Other:
+                            objStrJson.PM_PaymentType = Constants.C_KEY_Other_Value;
+                            break;
+                        case Constants.C_KEY_Vendor:
+                            objStrJson.PM_PaymentType = Constants.C_KEY_Vendor_Value;
+                            break;
+                        case Constants.C_KEY_Lienholder:
+                            objStrJson.PM_PaymentType = Constants.C_KEY_Lienholder_Value;
+                            break;
+                        case Constants.C_KEY_Contacts_and_Vendor:
+                            objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_and_Vendor_Value;
+                            break;
+                        case Constants.C_KEY_Contacts_and_Mortgagee:
+                            objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_and_Mortgagee_Value;
+                            break;
 
-                        //Mapping From PartyDetail 
-                        if (objPartyDetails != null)
+                    }
+
+                    switch (ClaimsPayMethod)
+                    {
+                        case Constants.C_KEY_Let_Customer_Pickup:
+                            objStrJson.PMETHOD = Constants.C_KEY_Let_Customer_Pickup_Value;
+                            break;
+                        case Constants.C_KEY_Check:
+                            objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
+                            break;
+                        default:
+                            objStrJson.PMETHOD = "";
+                            break;
+                    }
+
+                    switch (ClaimsPayTypeRequest)
+                    {
+                        case Constants.C_KEY_Recoverable_Depreciation:
+                            objStrJson.PM_RequestReason = Constants.C_KEY_Recoverable_Depreciation_Value;
+                            break;
+                        case Constants.C_KEY_Emergency_Funds:
+                            objStrJson.PM_RequestReason = Constants.C_KEY_Emergency_Funds_Value;
+                            break;
+                        case Constants.C_KEY_Loss_Payment:
+                            objStrJson.PM_RequestReason = Constants.C_KEY_Loss_Payment_Value;
+                            break;
+                        case Constants.C_KEY_Supplemental_Payment:
+                            objStrJson.PM_RequestReason = Constants.C_KEY_Supplemental_Payment_Value;
+                            break;
+                    }
+
+
+
+                    //check how many Payees are present
+                    if (objDTOModel.PaymentPayeeDataObjectsList.Count > 0)
+                    {
+
+                        int i = 1;
+                        foreach (var item in objDTOModel.PaymentPayeeDataObjectsList)
                         {
-                            //Party Business Detail
-                            if (objPartyDetails.partyBusinessDetail != null)
+
+                            var responsePartyDetails = await helper.GetPartyDetails(item.ClientID, config);
+                            objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(responsePartyDetails.ToString());
+                            //claims pay type and claims pay method value
+                            //Get Payee type
+                            switch (ClaimsPayType + ClaimsPayMethod)
                             {
-                                //partyPhone array mapping
-                                if (objPartyDetails.partyBusinessDetail.partyPhone != null)
-                                {
-                                    for (int i = 0; i < objPartyDetails.partyBusinessDetail.partyPhone.Count; i++)
+                                case Constants.C_KEY_Contacts + Constants.C_KEY_Let_Customer_Pickup:
+                                    objStrJson.PMETHOD = Constants.C_KEY_Let_Customer_Pickup_Value;
+                                    if (i == 1)
+                                        FillPCON(objStrJson, objPartyDetails);
+                                    if (i == 2)
+                                        FillSCON(objStrJson, objPartyDetails);
+                                    break;
+                                case Constants.C_KEY_Contacts + Constants.C_KEY_Check:
+                                    objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
+                                    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
+                                    if (i == 1)
+                                        FillPCON(objStrJson, objPartyDetails);
+                                    if (i == 2)
+                                        FillSCON(objStrJson, objPartyDetails);
+                                    break;
+                                case Constants.C_KEY_Contacts_and_Vendor:
+                                    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
+                                    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
+                                    if (i == 1)
                                     {
-                                        if (objPartyDetails.partyBusinessDetail.partyPhone[i].isPrimary == true)
-                                        {
-                                            objStrJson.PCON_MobilePhone = "";
-                                            objStrJson.SCON_MobilePhone = "";
-                                        }
+                                        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
+                                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                        objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                        FillBus(objStrJson, objPartyDetails);
                                     }
-                                }
-
-                                //partyEmail array mapping
-                                if (objPartyDetails.partyBusinessDetail.partyEmail != null)
-                                {
-
-                                    for (int i = 0; i < objPartyDetails.partyBusinessDetail.partyEmail.Count; i++)
+                                    if (i == 2)
                                     {
-                                        if (objPartyDetails.partyBusinessDetail.partyEmail[i].isPrimary == true)
-                                        {
-                                            objStrJson.PCON_EmailAddress = "";
-                                            objStrJson.SCON_EmailAddress = "";
-                                        }
+                                        objStrJson.PCON_Approval_Reqd = "";
+                                        FillPCON(objStrJson, objPartyDetails);
                                     }
-                                }
-
-                                //partyBusNameDetail array mapping
-                                if (objPartyDetails.partyBusinessDetail.partyBusNameDetail != null)
-                                {
-                                    for (int i = 0; i < objPartyDetails.partyBusinessDetail.partyBusNameDetail.Count; i++)
+                                    if (i == 3)
                                     {
-                                        if (objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyBusName.partyBusNameID ==
-                                            objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyName.partyNameID
-                                            && objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyName.isPrimary == true)
-                                        {
-                                            objStrJson.BUS_Name = objPartyDetails.partyBusinessDetail.partyBusNameDetail[i].partyBusName.name;
-                                           
-                                        }
+                                        objStrJson.SCON_Approval_Reqd = "";
+                                        FillSCON(objStrJson, objPartyDetails);
                                     }
-                                }
-
-                                //partyAddressDetail array mapping
-                                for (int i = 0; i < objPartyDetails.partyBusinessDetail.partyAddressDetail.Count; i++)
-                                {
-                                    if (objPartyDetails.partyBusinessDetail.partyAddressDetail[i].partyAddress.isPrimary == true &&
-                                        objPartyDetails.partyBusinessDetail.partyAddressDetail[i].partyAddress.addressID == objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.addressID)
+                                    break;
+                                case Constants.C_KEY_Contacts_and_Vendor + Constants.C_KEY_Check:
+                                    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
+                                    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
+                                    if (i == 1)
                                     {
-                                        objStrJson.BUS_Street = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.locationDetailsLine1;
-                                        objStrJson.BUS_City = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.adminDivisionPrimary;
-                                        objStrJson.BUS_State = await helper.GetState(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.nationalDivisionPrimary);
-                                        objStrJson.BUS_Zipcode = objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.postalCode;
-                                        objStrJson.BUS_Country = await helper.GetCountry(objPartyDetails.partyBusinessDetail.partyAddressDetail[i].address.countryCode.ToString().ToUpper());
+                                        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
+                                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                        objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                        FillBus(objStrJson, objPartyDetails);
                                     }
+                                    if (i == 2)
+                                    {
+                                        objStrJson.PCON_Approval_Reqd = "";
+                                        FillPCON(objStrJson, objPartyDetails);
+                                    }
+                                    if (i == 3)
+                                    {
+                                        objStrJson.SCON_Approval_Reqd = "";
+                                        FillSCON(objStrJson, objPartyDetails);
+                                    }
+                                    break;
+                                case Constants.C_KEY_Contacts_and_Vendor + Constants.C_KEY_Let_Customer_Pickup:
+                                    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
+                                    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
+                                    if (i == 1)
+                                    {
+                                        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
+                                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                        objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                        FillBus(objStrJson, objPartyDetails);
+                                    }
+                                    if (i == 2)
+                                    {
+                                        objStrJson.PCON_Approval_Reqd = "";
+                                        FillPCON(objStrJson, objPartyDetails);
+                                    }
+                                    if (i == 3)
+                                    {
+                                        objStrJson.SCON_Approval_Reqd = "";
+                                        FillSCON(objStrJson, objPartyDetails);
+                                    }
+                                    break;
 
-                                }
+                                case Constants.C_KEY_Contacts_and_Mortgagee + Constants.C_KEY_Let_Customer_Pickup:
+                                    if (i == 2)
+                                    {
+                                        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
+                                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                        objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                        FillBus(objStrJson, objPartyDetails);
+                                    }
+                                    if (i == 1)
+                                    {
+                                        objStrJson.PCON_Approval_Reqd = "";
+                                        FillPCON(objStrJson, objPartyDetails);
+                                    }
+                                    if (i == 3)
+                                    {
+                                        objStrJson.SCON_Approval_Reqd = "";
+                                        FillSCON(objStrJson, objPartyDetails);
+                                    }
+                                    break;
 
+                                case Constants.C_KEY_Lienholder + Constants.C_KEY_Let_Customer_Pickup:
+                                    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
+                                    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
+                                    if (i == 1)
+                                    {
+                                        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
+                                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                        objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                        FillBus(objStrJson, objPartyDetails);
+                                    }
+                                    break;
+                                case Constants.C_KEY_Lienholder + Constants.C_KEY_Check:
+                                    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
+                                    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
+                                    if (i == 1)
+                                    {
+                                        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
+                                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                        objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                        FillBus(objStrJson, objPartyDetails);
+                                    }
+                                    break;
+                                case Constants.C_KEY_Lienholder:
+                                    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
+                                    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
+                                    if (i == 1)
+                                    {
+                                        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
+                                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                        objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                        FillBus(objStrJson, objPartyDetails);
+                                    }
+                                    break;
+                                case Constants.C_KEY_Vendor + Constants.C_KEY_Check:
+                                    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
+                                    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
+                                    if (i == 1)
+                                    {
+                                        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
+                                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                        objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                        FillBus(objStrJson, objPartyDetails);
+                                    }
+                                    break;
+                                case Constants.C_KEY_Vendor:
+                                    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
+                                    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
+                                    if (i == 1)
+                                    {
+                                        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
+                                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                        objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                        FillBus(objStrJson, objPartyDetails);
+                                    }
+                                    break;
                             }
-                            //Party Individual Detail
-                            else if (objPartyDetails.partyIndividualDetail != null)
-                            {
 
-                                //partyIndNameDetail array mapping
-                                if (objPartyDetails.partyIndividualDetail.partyIndNameDetail != null)
-                                {
-                                    for (int i = 0; i < objPartyDetails.partyIndividualDetail.partyIndNameDetail.Count; i++)
-                                    {
-                                        if (objPartyDetails.partyIndividualDetail.partyIndNameDetail[i].partyIndName.partyIndNameID ==
-                                            objPartyDetails.partyIndividualDetail.partyIndNameDetail[i].partyName.partyNameID
-                                            && objPartyDetails.partyIndividualDetail.partyIndNameDetail[i].partyName.isPrimary == true)
-                                        {
-                                            objStrJson.PCON_FirstName = objPartyDetails.partyIndividualDetail.partyIndNameDetail[i].partyIndName.firstName;
-                                            objStrJson.PCON_LastName = objPartyDetails.partyIndividualDetail.partyIndNameDetail[i].partyIndName.lastName;
-
-                                            objStrJson.SCON_FirstName = "";
-                                            objStrJson.SCON_LastName = "";
-                                        }
-                                    }
-                                }
-
-                                //partyEmail array mapping
-                                if (objPartyDetails.partyIndividualDetail.partyEmail != null)
-                                {
-
-                                    for (int i = 0; i < objPartyDetails.partyIndividualDetail.partyEmail.Count; i++)
-                                    {
-                                        if (objPartyDetails.partyIndividualDetail.partyEmail[i].isPrimary == true)
-                                        {
-                                            objStrJson.PCON_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail[i].emailAddress;
-                                            objStrJson.SCON_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail[i].emailAddress;
-                                        }
-                                    }
-                                }
-
-                                //partyPhone array mapping
-                                if (objPartyDetails.partyIndividualDetail.partyPhone != null)
-                                {
-
-                                    for (int i = 0; i < objPartyDetails.partyIndividualDetail.partyPhone.Count; i++)
-                                    {
-                                        if (objPartyDetails.partyIndividualDetail.partyPhone[i].isPrimary == true)
-                                        {
-                                            objStrJson.SCON_MobilePhone = "";
-                                            objStrJson.PCON_MobilePhone = objPartyDetails.partyIndividualDetail.partyPhone[i].fullPhoneNumber;
-                                        }
-                                    }
-                                }
-
-                                //partyAddressDetail array mapping
-                                for (int i = 0; i < objPartyDetails.partyIndividualDetail.partyAddressDetail.Count; i++)
-                                {
-                                    if (objPartyDetails.partyIndividualDetail.partyAddressDetail[i].partyAddress.isPrimary == true &&
-                                        objPartyDetails.partyIndividualDetail.partyAddressDetail[i].partyAddress.addressID == objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.addressID)
-                                    {
-                                        objStrJson.BUS_Street = objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.locationDetailsLine1;
-                                        objStrJson.BUS_City = objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.adminDivisionPrimary;
-                                        objStrJson.BUS_State = await helper.GetState(objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.nationalDivisionPrimary);
-                                        objStrJson.BUS_Zipcode = objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.postalCode;
-                                        objStrJson.BUS_Country = await helper.GetCountry(objPartyDetails.partyIndividualDetail.partyAddressDetail[i].address.countryCode.ToString().ToUpper());
-                                    }
-
-                                }
-
-                            }
-                        }
-                        int numIndividual = 0;
-
-                        if (objDTOModel.PaymentPayeeDataObjectsList.Count > 1)
-                        {
-                            for (int i = 0; i < objDTOModel.PaymentPayeeDataObjectsList.Count; i++)
-                            {
-                                var responsePartyDetails2 = await helper.GetPartyDetails(objDTOModel.PaymentPayeeDataObjectsList[i].ClientID, config);
-                                PartyDetails? objPartyDetails2 = JsonConvert.DeserializeObject<PartyDetails>(responsePartyDetails2.ToString());
-
-                                if (objPartyDetails2.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    if (objPartyDetails.partyType == Constants.PartyType && numIndividual < 1)
-                                    {
-                                        for (int j = 0; j < objPartyDetails2.partyIndividualDetail.partyIndNameDetail.Count; j++)
-                                        {
-                                            if (objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyIndName.partyIndNameID ==
-                                                objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyName.partyNameID
-                                                && objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyName.isPrimary == true)
-                                            {
-                                                objStrJson.PCON_FirstName = objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyIndName.firstName;
-                                                objStrJson.PCON_LastName = objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyIndName.lastName;
-
-                                            }
-
-                                            if (objPartyDetails2.partyIndividualDetail.partyPhone[j].isPrimary == true)
-                                            {
-                                                objStrJson.PCON_MobilePhone = objPartyDetails2.partyIndividualDetail.partyPhone[j].fullPhoneNumber;
-                                            }
-                                            if (objPartyDetails2.partyIndividualDetail.partyEmail[j].isPrimary == true)
-                                            {
-                                                objStrJson.PCON_EmailAddress = objPartyDetails2.partyIndividualDetail.partyEmail[j].emailAddress;
-                                            }
-                                        }
-
-                                        if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Vendor_Value)
-                                        {
-                                            if (string.IsNullOrEmpty(approvalRequired))
-                                                objStrJson.PCON_Approval_Reqd = "Y";
-                                            else
-                                                objStrJson.PCON_Approval_Reqd = "N";
-                                        }
-
-
-                                    }
-                                    else
-                                    {
-                                        for (int j = 0; j < objPartyDetails2.partyIndividualDetail.partyIndNameDetail.Count; j++)
-                                        {
-                                            if (objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyIndName.partyIndNameID ==
-                                                objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyName.partyNameID
-                                                && objPartyDetails2.partyIndividualDetail.partyIndNameDetail[j].partyName.isPrimary == true)
-                                            {
-                                                objStrJson.SCON_FirstName = "";
-                                                objStrJson.SCON_LastName = "";
-
-                                            }
-
-                                            if (objPartyDetails2.partyIndividualDetail.partyPhone[j].isPrimary == true)
-                                            {
-                                                objStrJson.SCON_MobilePhone = "";
-                                            }
-                                            if (objPartyDetails2.partyIndividualDetail.partyEmail[j].isPrimary == true)
-                                            {
-                                                objStrJson.SCON_EmailAddress = "";
-                                            }
-                                        }
-
-                                        if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Vendor_Value)
-                                        {
-                                            if (string.IsNullOrEmpty(approvalRequired))
-                                            {
-                                                objStrJson.SCON_Approval_Reqd = "Y";
-
-                                            }
-
-                                            else
-                                            {
-                                                objStrJson.SCON_Approval_Reqd = "N";
-                                            }
-                                        }
-                                    }
-                                }
-                                else if (objPartyDetails2.partyType == Constants.PartyType)
-                                {
-                                    if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Vendor_Value)
-                                    {
-                                        if (string.IsNullOrEmpty(approvalRequired))
-                                        {
-                                            objStrJson.BUS_Type = Constants.BUS_Type;
-                                            objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                        }
-
-                                        else
-                                        {
-                                            objStrJson.SCON_Approval_Reqd = "N";
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
-
-                    //Mapping From Performer DTO
-                    objStrJson.PM_UserId = objDTOModel.ParticipantDataObject.PartyID;
-                    objStrJson.PM_User_FirstName = objDTOModel.PerformerDTO.PerformerNameDetailDTO.FirstName;
-                    objStrJson.PM_User_LastName = objDTOModel.PerformerDTO.PerformerNameDetailDTO.LastName;
-                    objStrJson.PM_User_EmailAddress = objStrJson.PCON_EmailAddress;
-
-                    //Mapping From AddressDTO_MailTo
-                    objStrJson.PMA_Street = string.Concat(objDTOModel.AddressDTO_MailTo.LocationDetailsLine1.ToString(), " "
-                        , objDTOModel.AddressDTO_MailTo.LocationDetailsLine2 == null ? "" : objDTOModel.AddressDTO_MailTo.LocationDetailsLine2);
-                    objStrJson.PMA_City = objDTOModel.AddressDTO_MailTo.AdminDivisionPrimary;
-                    objStrJson.PMA_State = await helper.GetState(objDTOModel.AddressDTO_MailTo.NationalDivisionPrimary);
-                    objStrJson.PMA_Zipcode = objDTOModel.AddressDTO_MailTo.PostalCode;
-                    objStrJson.PMA_Country = await helper.GetCountry(objDTOModel.AddressDTO_MailTo.CountryCode.ToString());
-                    if (objStrJson.PM_PaymentType ==Constants.C_KEY_Contacts_Value)
-                    {
-                        objStrJson.PMA_MailTo = string.Concat(objStrJson.PCON_FirstName, " ", objStrJson.PCON_LastName);
-                    }
-                    else if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Vendor_Value)
-                    {
-                        objStrJson.PMA_MailTo = objStrJson.BUS_Name;
-                    }
-                    else if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Mortgagee_Value)
-                    {
-                        objStrJson.PMA_MailTo = objStrJson.BUS_Name;
-                    }
-
-
-                    //objStrJson.PMETHOD_DD_AccountNumber = "";
-                    //objStrJson.PMETHOD_DD_RoutingNumber = "";
-                    //objStrJson.PMETHOD_DD_AccountType = "";
-
 
                     var opt = new JsonSerializerOptions() { WriteIndented = true };
                     string strJson = System.Text.Json.JsonSerializer.Serialize<Str_Json>(objStrJson, opt);
@@ -1385,8 +1272,74 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
         #endregion
 
+
+
+        public void FillPCON(Str_Json objStrJson, PartyDetails objPartyDetails)
+        {
+            if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
+            {
+                objStrJson.PCON_ContactId = objPartyDetails.partyIndividualDetail.party.partyID; ;
+                objStrJson.PCON_FirstName = objPartyDetails.partyIndividualDetail.partyIndNameDetail.Where(a => a.partyIndName.partyIndNameID == a.partyName.partyNameID && a.partyName.isPrimary == true).Select(b => b.partyIndName.firstName).FirstOrDefault().ToString();
+                objStrJson.PCON_LastName = objPartyDetails.partyIndividualDetail.partyIndNameDetail.Where(a => a.partyIndName.partyIndNameID == a.partyName.partyNameID && a.partyName.isPrimary == true).Select(b => b.partyIndName.lastName).FirstOrDefault().ToString();
+                objStrJson.PCON_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail.Where(a => a.isPrimary == true).Select(b => b.emailAddress).FirstOrDefault().ToString();
+                objStrJson.PCON_MobilePhone = objPartyDetails.partyIndividualDetail.partyPhone.Where(a => a.isPrimary == true).Select(b => b.fullPhoneNumber).FirstOrDefault().ToString();
+
+            }
+            if (objPartyDetails.partyType == Constants.PartyType)
+            {
+                objStrJson.PCON_ContactId = objPartyDetails.partyIndividualDetail.party.partyID;
+                objStrJson.PCON_FirstName = objPartyDetails.partyIndividualDetail.partyIndNameDetail.Where(a => a.partyIndName.partyIndNameID == a.partyName.partyNameID && a.partyName.isPrimary == true).Select(b => b.partyIndName.firstName).FirstOrDefault().ToString();
+                objStrJson.PCON_LastName = objPartyDetails.partyIndividualDetail.partyIndNameDetail.Where(a => a.partyIndName.partyIndNameID == a.partyName.partyNameID && a.partyName.isPrimary == true).Select(b => b.partyIndName.lastName).FirstOrDefault().ToString();
+                objStrJson.PCON_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail.Where(a => a.isPrimary == true).Select(b => b.emailAddress).FirstOrDefault().ToString();
+                objStrJson.PCON_MobilePhone = objPartyDetails.partyIndividualDetail.partyPhone.Where(a => a.isPrimary == true).Select(b => b.fullPhoneNumber).FirstOrDefault().ToString();
+                objStrJson.PCON_Business = "Y";
+            }
+        }
+
+        public void FillSCON(Str_Json objStrJson, PartyDetails objPartyDetails)
+        {
+
+            objStrJson.SCON_ContactId = objPartyDetails.partyIndividualDetail.party.partyID; ;
+            objStrJson.SCON_FirstName = objPartyDetails.partyIndividualDetail.partyIndNameDetail.Where(a => a.partyIndName.partyIndNameID == a.partyName.partyNameID && a.partyName.isPrimary == true).Select(b => b.partyIndName.firstName).FirstOrDefault().ToString();
+            objStrJson.SCON_LastName = objPartyDetails.partyIndividualDetail.partyIndNameDetail.Where(a => a.partyIndName.partyIndNameID == a.partyName.partyNameID && a.partyName.isPrimary == true).Select(b => b.partyIndName.lastName).FirstOrDefault().ToString();
+            objStrJson.SCON_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail.Where(a => a.isPrimary == true).Select(b => b.emailAddress).FirstOrDefault().ToString();
+            objStrJson.SCON_MobilePhone = objPartyDetails.partyIndividualDetail.partyPhone.Where(a => a.isPrimary == true).Select(b => b.fullPhoneNumber).FirstOrDefault().ToString();
+
+
+
+        }
+
+        public async void FillBus(Str_Json objStrJson, PartyDetails objPartyDetails)
+        {
+
+            if (objPartyDetails.partyType == Constants.PartyType)
+            {
+                objStrJson.BUS_BusinessId = objPartyDetails.partyBusinessDetail.party.partyID;
+                objStrJson.BUS_Name = objPartyDetails.partyBusinessDetail.partyBusNameDetail.Where(a => a.partyBusName.partyBusNameID == a.partyName.partyNameID && a.partyName.isPrimary == true).Select(b => b.partyBusName.name).ToString();
+
+                objStrJson.BUS_EmailAddress = objPartyDetails.partyBusinessDetail.partyEmail.Where(a => a.isPrimary == true).Select(b => b.emailAddress).FirstOrDefault().ToString();
+
+
+                objStrJson.BUS_Street = objPartyDetails.partyBusinessDetail.partyAddressDetail.Where(a => a.partyAddress.addressID == a.address.addressID && a.partyAddress.isPrimary == true).Select(b => b.address.locationDetailsLine1).FirstOrDefault().ToString() + objPartyDetails.partyBusinessDetail.partyAddressDetail.Where(a => a.partyAddress.addressID == a.address.addressID && a.partyAddress.isPrimary == true).Select(b => b.address.locationDetailsLine2).FirstOrDefault().ToString();
+
+                objStrJson.BUS_City = objPartyDetails.partyBusinessDetail.partyAddressDetail.Where(a => a.partyAddress.addressID == a.address.addressID && a.partyAddress.isPrimary == true).Select(b => b.address.adminDivisionPrimary).FirstOrDefault().ToString();
+
+                string? state = objPartyDetails.partyBusinessDetail.partyAddressDetail.Where(a => a.partyAddress.addressID == a.address.addressID && a.partyAddress.isPrimary == true).Select(b => b.address.nationalDivisionPrimary).FirstOrDefault().ToString();
+                objStrJson.BUS_State = await helper.GetState(state);
+
+                objStrJson.BUS_Zipcode = objPartyDetails.partyBusinessDetail.partyAddressDetail.Where(a => a.partyAddress.addressID == a.address.addressID && a.partyAddress.isPrimary == true).Select(b => b.address.postalCode).FirstOrDefault().ToString();
+
+                string country = objPartyDetails.partyBusinessDetail.partyAddressDetail.Where(a => a.partyAddress.addressID == a.address.addressID && a.partyAddress.isPrimary == true).Select(b => b.address.countryCode).FirstOrDefault().ToString().ToUpper();
+
+                objStrJson.BUS_Country = await helper.GetCountry(country);
+
+                objStrJson.BUS_TIN = objPartyDetails.partyBusinessDetail.partyBusiness.registrationID1;
+
+
+            }
+        }
         #endregion
 
-        
+
     }
 }

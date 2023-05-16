@@ -21,7 +21,7 @@ namespace ClaimsPay.Shared
         string ClaimsPayTypeRequest = string.Empty;
         string LoanAccountNumber = string.Empty;
         string ClaimsPayMethod = string.Empty;
-        string approvalRequired = string.Empty;
+        bool approvalRequired = false;
         #region Get Loss Details
         public async Task<string> GetLossDetails(string LossID, LoggingConfiguration config)
         {
@@ -213,7 +213,7 @@ namespace ClaimsPay.Shared
         #endregion
 
         #region Read Claimspay Field from Extended Data
-        public async Task ReadClaimsPayFields(JObject extendedData)
+        public void ReadClaimsPayFields(JObject extendedData, ref string ClaimsPayType, ref string ClaimsPayTypeRequest, ref string LoanAccountNumber, ref string ClaimsPayMethod, ref bool approvalRequired)
         {
             foreach (dynamic Column in extendedData["column"])
             {
@@ -250,7 +250,7 @@ namespace ClaimsPay.Shared
                 {
                     if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
                     {
-                        approvalRequired = Column.value["#text"].Value;
+                        approvalRequired = Convert.ToBoolean(Column.value["#text"].Value);
                     }
 
                 }
