@@ -47,6 +47,7 @@ namespace ClaimsPay.Modules.ClaimsPay.Models
         public const string C_KEY_Contacts_and_Vendor_Value = "Contact(s) and Vendor";
         public const string C_KEY_Contacts_and_Mortgagee = "e1e44";
         public const string C_KEY_Contacts_and_Mortgagee_Value = "Contact(s) and Mortgagee";
+        public const string C_KEY_Mortgagee_Value = "Mortgagee";
 
 
         //Request Type
