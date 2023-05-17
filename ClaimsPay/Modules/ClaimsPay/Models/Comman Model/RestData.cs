@@ -74,6 +74,10 @@
         public string? SCON_LastName { get; set; }
         public string? SCON_MobilePhone { get; set; }
         public string? SCON_OfficePhone { get; set; }
+        public string? PM_Expedite { get; set; }
+        public string? PM_PrintNow { get; set; }
+        public string? PM_Certified { get; set; }
+
     }
 
 

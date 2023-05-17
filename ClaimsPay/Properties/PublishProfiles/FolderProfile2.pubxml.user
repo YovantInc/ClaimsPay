@@ -5,7 +5,7 @@ https://go.microsoft.com/fwlink/?LinkID=208121.
 <Project>
   <PropertyGroup>
     <_PublishTargetUrl>C:\ClaimsPay</_PublishTargetUrl>
-    <History>True|2023-05-16T11:16:53.4482536Z;</History>
+    <History>True|2023-05-16T14:48:55.8000251Z;False|2023-05-16T20:18:29.8184607+05:30;True|2023-05-16T20:16:41.4422691+05:30;True|2023-05-16T20:14:13.6247595+05:30;True|2023-05-16T20:11:20.4757762+05:30;True|2023-05-16T16:46:53.4482536+05:30;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>

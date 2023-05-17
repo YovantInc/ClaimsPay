@@ -31,7 +31,7 @@ namespace ClaimsPay.Modules.OneInc
 
             #region Create Payment Master
 
-            endpoints.MapPost($"CreatePaymentMaster", async Task<JsonDocument> (HttpRequest request) =>
+            endpoints.MapPost($"CreatePaymentMaster", async Task (HttpRequest request) =>
             {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
@@ -41,7 +41,7 @@ namespace ClaimsPay.Modules.OneInc
                 JsonDocument oobjjson = JsonDocument.Parse(result.ToString());
 
 
-                return await Task.FromResult(oobjjson);
+                //return await Task.FromResult(oobjjson);
             }).AddEndpointFilter<ClaimsPayFilter>()
               .AddEndpointFilter<ClaimsPayIPFilter>();
             #endregion
