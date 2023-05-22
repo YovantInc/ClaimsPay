@@ -7,19 +7,19 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Comman_Model
     public class AddressDTOMailTo
     {
         [JsonProperty("AddressID")]
-        public string AddressID { get; set; }
+        public string? AddressID { get; set; }
 
         [JsonProperty("AddressType")]
-        public string AddressType { get; set; }
+        public string? AddressType { get; set; }
 
         [JsonProperty("AddressTypeAssociations")]
         public List<AddressTypeAssociation> AddressTypeAssociations { get; set; }
 
         [JsonProperty("AdminDivisionPrimary")]
-        public string AdminDivisionPrimary { get; set; }
+        public string? AdminDivisionPrimary { get; set; }
 
         [JsonProperty("AdminDivisionSecondary")]
-        public string AdminDivisionSecondary { get; set; }
+        public string? AdminDivisionSecondary { get; set; }
 
         [JsonProperty("AdminDivisionTertiary")]
         public string AdminDivisionTertiary { get; set; }

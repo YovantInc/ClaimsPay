@@ -22,6 +22,9 @@ namespace ClaimsPay.Shared
         string LoanAccountNumber = string.Empty;
         string ClaimsPayMethod = string.Empty;
         bool approvalRequired = false;
+        bool printNow = false;
+        bool certified = false;
+        bool expedite = false;
         #region Get Loss Details
         public async Task<string> GetLossDetails(string LossID, LoggingConfiguration config)
         {
@@ -30,17 +33,17 @@ namespace ClaimsPay.Shared
             try
             {
 
-                _logger.Info("\r\n");
-                _logger.Info("\r\n");
-                _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Party Detail ");
-                _logger.Info("");
+                //_logger.Info("\r\n");
+                //_logger.Info("\r\n");
+                //_logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Party Detail ");
+                //_logger.Info("");
 
                 string? baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
                 string? URI = baseURI + "/v3/losses/lossids?includeExtendedData=false";
 
-                _logger.Info("\r\n");
-                _logger.Info("Request");
-                _logger.Info(URI);
+                //_logger.Info("\r\n");
+                //_logger.Info("Request");
+                //_logger.Info(URI);
                 objhttpClient.DefaultRequestHeaders.Clear();
                 objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
                 objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
@@ -49,13 +52,13 @@ namespace ClaimsPay.Shared
                 var result = await objhttpClient.PostAsync(URI, stringContent).Result.Content.ReadAsStringAsync();
                 objResponse = JObject.Parse(result.ToString());
 
-                _logger.Info("\r\n");
-                _logger.Info("Response");
-                _logger.Info(result.ToString());
+                //_logger.Info("\r\n");
+                //_logger.Info("Response");
+                //_logger.Info(result.ToString());
 
                 //return result.ToString();
-                _logger.Info("\r\n");
-                _logger.Info("Loss Details Executed Successfully");
+                //_logger.Info("\r\n");
+                //_logger.Info("Loss Details Executed Successfully");
             }
 
             catch (Exception ex)
@@ -83,31 +86,31 @@ namespace ClaimsPay.Shared
             try
             {
 
-                _logger.Info("\r\n");
+                //_logger.Info("\r\n");
 
-                _logger.Info("\r\n");
-                _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Party Detail ");
-                _logger.Info("");
+                //_logger.Info("\r\n");
+                //_logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Party Detail ");
+                //_logger.Info("");
 
                 string baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
                 string URI = baseURI + "/v2/parties/" + partyID + "/partyDetails";
 
-                _logger.Info("\r\n");
-                _logger.Info("Request");
-                _logger.Info(URI);
+                //_logger.Info("\r\n");
+                //_logger.Info("Request");
+                //_logger.Info(URI);
                 objhttpClient.DefaultRequestHeaders.Clear();
                 objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
                 objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
 
                 var result = await objhttpClient.GetAsync(URI).Result.Content.ReadAsStringAsync();
 
-                _logger.Info("\r\n");
-                _logger.Info("Response");
-                _logger.Info(result.ToString());
+                //_logger.Info("\r\n");
+                //_logger.Info("Response");
+                //_logger.Info(result.ToString());
 
                 return result.ToString();
-                _logger.Info("\r\n");
-                _logger.Info("Party Details Executed Successfully");
+                //_logger.Info("\r\n");
+                //_logger.Info("Party Details Executed Successfully");
             }
 
             catch (Exception ex)
@@ -213,7 +216,7 @@ namespace ClaimsPay.Shared
         #endregion
 
         #region Read Claimspay Field from Extended Data
-        public void ReadClaimsPayFields(JObject extendedData, ref string ClaimsPayType, ref string ClaimsPayTypeRequest, ref string LoanAccountNumber, ref string ClaimsPayMethod, ref bool approvalRequired)
+        public void ReadClaimsPayFields(JObject extendedData, ref string ClaimsPayType, ref string ClaimsPayTypeRequest, ref string LoanAccountNumber, ref string ClaimsPayMethod, ref string approvalRequired, ref string printNow, ref string certified, ref string expedite)
         {
             foreach (dynamic Column in extendedData["column"])
             {
@@ -250,7 +253,54 @@ namespace ClaimsPay.Shared
                 {
                     if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
                     {
-                        approvalRequired = Convert.ToBoolean(Column.value["#text"].Value);
+                        bool approvalRequiredval = Convert.ToBoolean(Column.value["#text"].Value);
+                        if (approvalRequiredval)
+                        {
+                            approvalRequired = "Y";
+                        }
+                        else
+                        {
+                            approvalRequired = "N";
+                        }
+                    }
+
+                }
+                else if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_PrintNow))
+                {
+                    if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
+                    {
+                        bool printNowVal = Convert.ToBoolean(Column.value["#text"].Value);
+                        if (printNowVal)
+                        {
+                            printNow = "Y";
+                        }
+
+                    }
+
+                }
+                else if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_Expedite))
+                {
+                    if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
+                    {
+                        bool expediteval = Convert.ToBoolean(Column.value["#text"].Value);
+                        if (expediteval)
+                        {
+                            expedite = "Y";
+                        }
+
+                    }
+
+                }
+                else if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_Certified))
+                {
+                    if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
+                    {
+                        bool certifiedval = Convert.ToBoolean(Column.value["#text"].Value);
+                        if (certifiedval)
+                        {
+                            certified = "Y";
+                        }
+
                     }
 
                 }
@@ -285,5 +335,69 @@ namespace ClaimsPay.Shared
         }
 
         #endregion
+
+        #region Update Payment Header Details
+        public async Task<string> UpdatePaymentHeaderDetails(string payload, LoggingConfiguration config)
+        {
+            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
+            try
+            {
+
+                _logger.Info("\r\n");
+
+                _logger.Info("\r\n");
+                _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Update Payment Header Details ");
+                _logger.Info("");
+
+
+                string? baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
+                string? URI = baseURI + "/v3/paymentheader";
+
+                _logger.Info("\r\n");
+                _logger.Info("Request URI");
+                _logger.Info(URI);
+
+                _logger.Info("\r\n");
+                _logger.Info("Request to DC Payment Header Update");
+                _logger.Info(payload.ToString());
+
+                objhttpClient.DefaultRequestHeaders.Clear();
+                objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
+                objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
+
+                var content = JObject.Parse(payload);
+                var stringContent = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
+
+                var responsePutPaymentHeader = await objhttpClient.PutAsync(URI, stringContent);
+                var resultPaymentHeaderUpdate = responsePutPaymentHeader.Content.ReadAsStringAsync();
+
+                _logger.Info("\r\n");
+                _logger.Info("Response");
+                _logger.Info(resultPaymentHeaderUpdate.Result.ToString());
+
+                return resultPaymentHeaderUpdate.Result.ToString();
+                _logger.Info("\r\n");
+                _logger.Info("Update Payment Header Details Executed Successfully");
+            }
+
+            catch (Exception ex)
+            {
+
+                _logger.Info("\r\n");
+                _logger.Info("Update Payment Header Details Execution failed");
+                _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
+
+            }
+            finally
+            {
+                //_logger.Info("------------------------------------------------------------------ || Log End || -------------------------------------------------------------------------");
+                // NLog.LogManager.Shutdown();
+            }
+
+            return "";
+        }
+
+        #endregion
+
     }
 }

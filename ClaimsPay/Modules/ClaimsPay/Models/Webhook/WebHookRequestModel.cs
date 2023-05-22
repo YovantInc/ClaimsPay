@@ -8,22 +8,22 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Webhook
     public class Column
     {
         [JsonPropertyName("name")]
-        public string name { get; set; }
+        public string? name { get; set; }
 
         [JsonPropertyName("datatype")]
-        public string datatype { get; set; }
+        public string? datatype { get; set; }
 
         [JsonPropertyName("value")]
-        public Value value { get; set; }
+        public Value? value { get; set; }
 
         [JsonPropertyName("originalvalue")]
-        public Originalvalue originalvalue { get; set; }
+        public Originalvalue? originalvalue { get; set; }
 
         [JsonPropertyName("begindate")]
-        public DateTime begindate { get; set; }
+        public DateTime? begindate { get; set; }
 
         [JsonPropertyName("enddate")]
-        public DateTime enddate { get; set; }
+        public DateTime? enddate { get; set; }
     }
 
     public class Columns
@@ -35,28 +35,28 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Webhook
     public class Entitydata
     {
         [JsonPropertyName("keys")]
-        public Keys keys { get; set; }
+        public Keys? keys { get; set; }
 
         [JsonPropertyName("columns")]
-        public Columns columns { get; set; }
+        public Columns? columns { get; set; }
     }
 
     public class ExtendedData
     {
         [JsonPropertyName("extendeddata")]
-        public Extendeddata2 extendeddata2 { get; set; }
+        public Extendeddata2? extendeddata2 { get; set; }
     }
 
     public class Extendeddata2
     {
         [JsonPropertyName("@xmlns:xs")]
-        public string xmlnsxs { get; set; }
+        public string? xmlnsxs { get; set; }
 
         [JsonPropertyName("@xmlns:xsi")]
-        public string xmlnsxsi { get; set; }
+        public string? xmlnsxsi { get; set; }
 
         [JsonPropertyName("table")]
-        public Table table { get; set; }
+        public Table? table { get; set; }
     }
 
     public class Key
@@ -65,180 +65,180 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Webhook
         public string name { get; set; }
 
         [JsonPropertyName("datatype")]
-        public string datatype { get; set; }
+        public string? datatype { get; set; }
 
         [JsonPropertyName("value")]
-        public Value value { get; set; }
+        public Value? value { get; set; }
     }
 
     public class Keys
     {
         [JsonPropertyName("key")]
-        public Key key { get; set; }
+        public Key? key { get; set; }
     }
 
     public class Originalvalue
     {
         [JsonPropertyName("@xsi:nil")]
-        public string xsinil { get; set; }
+        public string? xsinil { get; set; }
     }
 
     public class PaymentHeaderDTO
     {
         [JsonPropertyName("paymentID")]
-        public string paymentID { get; set; }
+        public string? paymentID { get; set; }
 
         [JsonPropertyName("recurringPaymentID")]
-        public object recurringPaymentID { get; set; }
+        public object? recurringPaymentID { get; set; }
 
         [JsonPropertyName("issueDate")]
-        public DateTime issueDate { get; set; }
+        public DateTime? issueDate { get; set; }
 
         [JsonPropertyName("finalPaymentIndicator")]
-        public bool finalPaymentIndicator { get; set; }
+        public bool? finalPaymentIndicator { get; set; }
 
         [JsonPropertyName("authorityTaskExist")]
-        public bool authorityTaskExist { get; set; }
+        public bool? authorityTaskExist { get; set; }
 
         [JsonPropertyName("paymentMethod")]
-        public string paymentMethod { get; set; }
+        public string? paymentMethod { get; set; }
 
         [JsonPropertyName("stopVoid")]
-        public object stopVoid { get; set; }
+        public object? stopVoid { get; set; }
 
         [JsonPropertyName("stopVoidReason")]
-        public object stopVoidReason { get; set; }
+        public object? stopVoidReason { get; set; }
 
         [JsonPropertyName("paymentType")]
-        public string paymentType { get; set; }
+        public string? paymentType { get; set; }
 
         [JsonPropertyName("attachmentIndicator")]
-        public bool attachmentIndicator { get; set; }
+        public bool? attachmentIndicator { get; set; }
 
         [JsonPropertyName("primaryPayeeInsuranceInvolvementID")]
-        public string primaryPayeeInsuranceInvolvementID { get; set; }
+        public string? primaryPayeeInsuranceInvolvementID { get; set; }
 
         [JsonPropertyName("mailToInsuranceInvolvementID")]
-        public string mailToInsuranceInvolvementID { get; set; }
+        public string? mailToInsuranceInvolvementID { get; set; }
 
         [JsonPropertyName("primaryPayeeClientID")]
-        public string primaryPayeeClientID { get; set; }
+        public string? primaryPayeeClientID { get; set; }
 
         [JsonPropertyName("mailTOClientID")]
-        public string mailTOClientID { get; set; }
+        public string? mailTOClientID { get; set; }
 
         [JsonPropertyName("explainationOfBenefitComments")]
-        public object explainationOfBenefitComments { get; set; }
+        public object? explainationOfBenefitComments { get; set; }
 
         [JsonPropertyName("bankAccountNumber")]
-        public string bankAccountNumber { get; set; }
+        public string? bankAccountNumber { get; set; }
 
         [JsonPropertyName("bankTransitNumber")]
-        public string bankTransitNumber { get; set; }
+        public string? bankTransitNumber { get; set; }
 
         [JsonPropertyName("holdReason")]
-        public object holdReason { get; set; }
+        public object? holdReason { get; set; }
 
         [JsonPropertyName("handlingNotes")]
-        public object handlingNotes { get; set; }
+        public object? handlingNotes { get; set; }
 
         [JsonPropertyName("electronFundsTransferID")]
-        public object electronFundsTransferID { get; set; }
+        public object? electronFundsTransferID { get; set; }
 
         [JsonPropertyName("payeeName")]
-        public object payeeName { get; set; }
+        public object? payeeName { get; set; }
 
         [JsonPropertyName("mailToName")]
-        public string mailToName { get; set; }
+        public string? mailToName { get; set; }
 
         [JsonPropertyName("mailToAddressID")]
-        public string mailToAddressID { get; set; }
+        public string? mailToAddressID { get; set; }
 
         [JsonPropertyName("reconciliationStatus")]
-        public object reconciliationStatus { get; set; }
+        public object? reconciliationStatus { get; set; }
 
         [JsonPropertyName("paymentNumber")]
-        public string paymentNumber { get; set; }
+        public string? paymentNumber { get; set; }
 
         [JsonPropertyName("paymentStatus")]
-        public string paymentStatus { get; set; }
+        public string? paymentStatus { get; set; }
 
         [JsonPropertyName("checkStatus")]
-        public string checkStatus { get; set; }
+        public string? checkStatus { get; set; }
 
         [JsonPropertyName("printerLocation")]
-        public object printerLocation { get; set; }
+        public object? printerLocation { get; set; }
 
         [JsonPropertyName("checkMemo")]
-        public object checkMemo { get; set; }
+        public object? checkMemo { get; set; }
 
         [JsonPropertyName("paymentGroupNumber")]
-        public object paymentGroupNumber { get; set; }
+        public object? paymentGroupNumber { get; set; }
 
         [JsonPropertyName("invoiceID")]
-        public object invoiceID { get; set; }
+        public object? invoiceID { get; set; }
 
         [JsonPropertyName("paymentCurrency")]
-        public string paymentCurrency { get; set; }
+        public string? paymentCurrency { get; set; }
 
         [JsonPropertyName("totalApprovedAmount")]
-        public double totalApprovedAmount { get; set; }
+        public double? totalApprovedAmount { get; set; }
 
         [JsonPropertyName("coversionDate")]
-        public DateTime coversionDate { get; set; }
+        public DateTime? coversionDate { get; set; }
 
         [JsonPropertyName("language")]
-        public string language { get; set; }
+        public string? language { get; set; }
 
         [JsonPropertyName("officeOrgEntityID")]
-        public string officeOrgEntityID { get; set; }
+        public string? officeOrgEntityID { get; set; }
 
         [JsonPropertyName("userOrgEntityID")]
-        public string userOrgEntityID { get; set; }
+        public string? userOrgEntityID { get; set; }
 
         [JsonPropertyName("customCheckPartyId")]
-        public object customCheckPartyId { get; set; }
+        public object? customCheckPartyId { get; set; }
 
         [JsonPropertyName("lastTransactionID")]
-        public string lastTransactionID { get; set; }
+        public string? lastTransactionID { get; set; }
 
         [JsonPropertyName("reportablePartyID")]
-        public object reportablePartyID { get; set; }
+        public object? reportablePartyID { get; set; }
 
         [JsonPropertyName("lastUpdate")]
-        public DateTime lastUpdate { get; set; }
+        public DateTime? lastUpdate { get; set; }
 
         [JsonPropertyName("extendedData")]
-        public object extendedData { get; set; }
+        public object? extendedData { get; set; }
     }
 
     public class WebHookRequestModel
     {
         [JsonPropertyName("paymentHeaderDTO")]
-        public PaymentHeaderDTO paymentHeaderDTO { get; set; }
+        public PaymentHeaderDTO? paymentHeaderDTO { get; set; }
 
         [JsonPropertyName("__extendedData")]
-        public ExtendedData __extendedData { get; set; }
+        public ExtendedData? __extendedData { get; set; }
     }
 
     public class Table
     {
         [JsonPropertyName("name")]
-        public string name { get; set; }
+        public string? name { get; set; }
 
         [JsonPropertyName("entitydata")]
-        public Entitydata entitydata { get; set; }
+        public Entitydata? entitydata { get; set; }
     }
 
     public class Value
     {
         [JsonPropertyName("@xsi:type")]
-        public string xsitype { get; set; }
+        public string? xsitype { get; set; }
 
         [JsonPropertyName("#text")]
-        public string text { get; set; }
+        public string? text { get; set; }
 
         [JsonPropertyName("@xsi:nil")]
-        public string xsinil { get; set; }
+        public string? xsinil { get; set; }
     }
 }
