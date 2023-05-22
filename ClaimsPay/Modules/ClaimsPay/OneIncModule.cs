@@ -114,13 +114,13 @@ namespace ClaimsPay.Modules.OneInc
             #endregion
 
             #region Resend Email
-            endpoints.MapPost("resendEmail", async Task<JObject> (HttpRequest request) =>
+            endpoints.MapPost("resendEmail", async Task<JsonDocument> (HttpRequest request) =>
             {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
                 JObject objRequest = JObject.Parse(requestJson);
                 var result = await objClaimsPayDataHandler.ClaimsPayDataHandlerResendEmail(objRequest);
-                var objResponse = JObject.Parse("{\r\n\t\"Status\": \"Success\",\r\n\t\"Message\": \"Endpoint Hit Successfully\"\r\n}");
+                var objResponse = JsonDocument.Parse(result.ToString());
                 return objResponse;
             })
             .AddEndpointFilter<ClaimsPayFilter>()
@@ -140,8 +140,8 @@ namespace ClaimsPay.Modules.OneInc
                 System.Console.WriteLine(token);
                 var credentialstring = Encoding.UTF8.GetString(Convert.FromBase64String(token));
                 var credentials = credentialstring.Split(':');
-                string? authKey = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["AuthenticationKey"];
-                string? authPassword = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["AuthenticationPassword"];
+                string? authKey = AppConfig.configuration?.GetSection($"Modules:ClientConfig")["AuthenticationKey"];
+                string? authPassword = AppConfig.configuration?.GetSection($"Modules:ClientConfig")["AuthenticationPassword"];
                 if (authHeader != null && authHeader.StartsWith("basic", StringComparison.OrdinalIgnoreCase))
                 {
                     if (credentials[0] == authKey && credentials[1] == authPassword)

@@ -99,10 +99,6 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 //log input recieved from DC Claims
                 _logger.Info(requestJson.Root);
 
-
-
-
-
                 objDTOModel = JsonConvert.DeserializeObject<DTOModel>(requestJson.ToString());
 
                 string sessionID = await GetSessionID(config);
@@ -114,10 +110,10 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     string? ClaimsPayTypeRequest = string.Empty;
                     string? LoanAccountNumber = string.Empty;
                     string? ClaimsPayMethod = string.Empty;
-                    string approvalRequired = string.Empty;
-                    string printNow = string.Empty;
-                    string expedite = string.Empty;
-                    string certified = string.Empty;
+                    string? approvalRequired = string.Empty;
+                    string? printNow = string.Empty;
+                    string? expedite = string.Empty;
+                    string? certified = string.Empty;
                     //Read Payment Headers
                     JObject? objextendedData = JObject.Parse(requestJson["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].ToString());
                     helper.ReadClaimsPayFields(objextendedData!, ref ClaimsPayType, ref ClaimsPayTypeRequest, ref LoanAccountNumber, ref ClaimsPayMethod, ref approvalRequired, ref printNow, ref certified, ref expedite);
@@ -138,7 +134,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     objStrJson.PM_User_LastName = objDTOModel.PerformerDTO.PerformerNameDetailDTO.LastName;
                     var result = await helper.GetPartyDetails(objDTOModel.PerformerDTO.OrganizationEntityID.ToString(), config);
                     objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(result.ToString())!;
-                    objStrJson.PM_User_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail.Where(a => a.isPrimary = true).Select(b => b.emailAddress).FirstOrDefault().ToString();
+                    objStrJson.PM_User_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail!.Where(a => a.isPrimary == true).Select(b => b.emailAddress).FirstOrDefault();
 
                     //Mapping From AddressDTO_MailTo
                     objStrJson.PMA_Street = string.Concat(objDTOModel.AddressDTO_MailTo.LocationDetailsLine1.ToString(), " "
@@ -225,7 +221,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     }
 
                     PartyDetails? objReportablePartyDetails = new PartyDetails();
-                    string Reportable_PartyId = objDTOModel.PaymentHeader.ReportablePartyID;
+                    string? Reportable_PartyId = objDTOModel.PaymentHeader.ReportablePartyID;
                     if (!string.IsNullOrEmpty(Reportable_PartyId))
                     {
                         var reportablePartyDetails = await helper.GetPartyDetails(Reportable_PartyId, config);
@@ -350,7 +346,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 case Constants.C_KEY_Contacts_and_Mortgagee + Constants.C_KEY_Let_Customer_Pickup:
                                     objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
                                     objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                    string ParticipantId = objDTOModel.ParticipantDataObject.ParticipantRolesDTO.Where(a => a.ParticipantRole == "MTGE").Select(b => b.ParticipantID).FirstOrDefault();
+                                    string? ParticipantId = objDTOModel.ParticipantDataObject.ParticipantRolesDTO!.Where(a => a.ParticipantRole == "MTGE").Select(b => b.ParticipantID).FirstOrDefault();
 
                                     if (IsBussiness == false && item.InsuranceInvolvementID == ParticipantId)
                                     {
@@ -374,61 +370,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                     }
                                     break;
 
-                                    //case Constants.C_KEY_Lienholder + Constants.C_KEY_Let_Customer_Pickup:
-                                    //    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-                                    //    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                    //    if (i == 1)
-                                    //    {
-                                    //        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
-                                    //        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    //        objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    //        FillBus(objStrJson, objPartyDetails);
-                                    //    }
-                                    //    break;
-                                    //case Constants.C_KEY_Lienholder + Constants.C_KEY_Check:
-                                    //    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-                                    //    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                    //    if (i == 1)
-                                    //    {
-                                    //        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
-                                    //        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    //        objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    //        FillBus(objStrJson, objPartyDetails);
-                                    //    }
-                                    //    break;
-                                    //case Constants.C_KEY_Lienholder:
-                                    //    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-                                    //    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                    //    if (i == 1)
-                                    //    {
-                                    //        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
-                                    //        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    //        objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    //        FillBus(objStrJson, objPartyDetails);
-                                    //    }
-                                    //    break;
-                                    //case Constants.C_KEY_Vendor + Constants.C_KEY_Check:
-                                    //    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-                                    //    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                    //    if (i == 1)
-                                    //    {
-                                    //        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
-                                    //        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    //        objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    //        FillBus(objStrJson, objPartyDetails);
-                                    //    }
-                                    //    break;
-                                    //case Constants.C_KEY_Vendor:
-                                    //    objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-                                    //    objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                    //    if (i == 1)
-                                    //    {
-                                    //        objStrJson.BUS_Type = await helper.GetParticipantRole(objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole.ToString() == "" ? "" : objDTOModel.ParticipantDataObject.ParticipantRolesDTO[0].ParticipantRole);
-                                    //        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    //        objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    //        FillBus(objStrJson, objPartyDetails);
-                                    //    }
-                                    //    break;
+                                   
                             }
 
                         }
@@ -617,6 +559,132 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     _logger.Info("Response From OneInc");
                     _logger.Info(response.Result.ToString());
 
+
+                    //Get Payment Header Detail
+
+                    var responsePaymentHeaderDetail =await helper.GetPaymentHeaderDetails(json["PM_PaymentID"].ToString(),config);
+
+                    JObject? objreq = JObject.Parse(responsePaymentHeaderDetail.ToString());
+
+                    JObject? colObj = JObject.Parse(objreq["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].ToString());
+                    JArray? columArray = JArray.Parse(colObj["column"].ToString());
+
+                    var jObjects = columArray.ToObject<List<JObject>>();
+
+                    var DATAITEM_PM_Orig_Method = columArray.Select((x, index) => new { Name = x.Value<string>("name"), Node = x, Index = index })
+                                        .Single(x => x.Name == Constants.DATAITEM_FQN_PM_Orig_Method)
+                                        .Index;
+                    var DATAITEM_PM_Status = columArray.Select((x, index) => new { Name = x.Value<string>("name"), Node = x, Index = index })
+                                        .Single(x => x.Name == Constants.DATAITEM_FQN_PM_Status)
+                                        .Index;
+                    var DATAITEM_PM_MailTrackingNumber = columArray.Select((x, index) => new { Name = x.Value<string>("name"), Node = x, Index = index })
+                                        .Single(x => x.Name == Constants.DATAITEM_FQN_PM_MailTrackingNumber)
+                                        .Index;
+                    var DATAITEM_IP_PaymentID = columArray.Select((x, index) => new { Name = x.Value<string>("name"), Node = x, Index = index })
+                                        .Single(x => x.Name == Constants.DATAITEM_FQN_IP_PaymentID)
+                                        .Index;
+
+                    foreach (var obj in jObjects)
+                    {
+                        //For PM_Method_Last4Digit
+                        if (jObjects.IndexOf(obj) == DATAITEM_PM_Orig_Method)
+                        {
+                            foreach (var prop in obj.Properties())
+                            {
+                                if (prop.Name == "value")                     //Get desired property
+                                {
+                                    obj.Remove("value");
+                                    obj.Add(new JProperty("value", new JObject()));
+
+                                    JObject? value = obj["value"] as JObject;
+
+                                    //Add needed properties
+                                    value.Add(new JProperty("@xsi:type", new JObject()));
+                                    value.Add(new JProperty("#text", new JObject()));
+
+                                    //Give them values
+                                    value["@xsi:type"] = "xs:string";
+                                    value["#text"] = json["PM_PaymentMethod"].ToString();
+                                    break;
+                                }
+                            }
+                        }
+                        else if (jObjects.IndexOf(obj) == DATAITEM_PM_Status)
+                        {
+                            foreach (var prop in obj.Properties())
+                            {
+                                if (prop.Name == "value")                     //Get desired property
+                                {
+                                    obj.Remove("value");
+                                    obj.Add(new JProperty("value", new JObject()));
+
+                                    JObject? value = obj["value"] as JObject;
+
+                                    //Add needed properties
+                                    value.Add(new JProperty("@xsi:type", new JObject()));
+                                    value.Add(new JProperty("#text", new JObject()));
+
+                                    //Give them values
+                                    value["@xsi:type"] = "xs:string";
+                                    value["#text"] = json["PM_Status"].ToString();
+                                    break;
+                                }
+                            }
+                        }
+                        else if (jObjects.IndexOf(obj) == DATAITEM_PM_MailTrackingNumber)
+                        {
+                            foreach (var prop in obj.Properties())
+                            {
+                                if (prop.Name == "value")                     //Get desired property
+                                {
+                                    obj.Remove("value");
+                                    obj.Add(new JProperty("value", new JObject()));
+
+                                    JObject? value = obj["value"] as JObject;
+
+                                    //Add needed properties
+                                    value.Add(new JProperty("@xsi:type", new JObject()));
+                                    value.Add(new JProperty("#text", new JObject()));
+
+                                    //Give them values
+                                    value["@xsi:type"] = "xs:string";
+                                    value["#text"] = json["PM_Id"].ToString();
+                                    break;
+                                }
+                            }
+                        }
+                        else if (jObjects.IndexOf(obj) == DATAITEM_IP_PaymentID)
+                        {
+                            foreach (var prop in obj.Properties())
+                            {
+                                if (prop.Name == "value")                     //Get desired property
+                                {
+                                    obj.Remove("value");
+                                    obj.Add(new JProperty("value", new JObject()));
+
+                                    JObject? value = obj["value"] as JObject;
+
+                                    //Add needed properties
+                                    value.Add(new JProperty("@xsi:type", new JObject()));
+                                    value.Add(new JProperty("#text", new JObject()));
+
+                                    //Give them values
+                                    value["@xsi:type"] = "xs:string";
+                                    value["#text"] = json["PM_TranId"].ToString();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+
+                    JArray? outputArray = JArray.FromObject(jObjects);         //Output array
+                    JObject? updatedJson = new JObject();
+                    updatedJson["column"] = outputArray;
+                    objreq["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].Replace(updatedJson);
+
+                    var responsePaymentheaderUpdate = await helper.UpdatePaymentHeaderDetails(objreq.ToString(), config);
+                    
                     _logger.Info("\r\n");
                     _logger.Info("Create Payment Master Executed Successfully");
                 }
@@ -665,9 +733,9 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             {
 
 
-                RestData objRequestCreateVendor = new RestData();
-                Str_Json objStr_Json = new Str_Json();
-                PartyDetails objPartyDetails = new PartyDetails();
+                RestData? objRequestCreateVendor = new RestData();
+                Str_Json? objStr_Json = new Str_Json();
+                PartyDetails? objPartyDetails = new PartyDetails();
 
 
 
@@ -871,7 +939,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 obj.Remove("value");
                                 obj.Add(new JProperty("value", new JObject()));
 
-                                JObject? value = (JObject)obj["value"];
+                                JObject? value = obj["value"] as JObject;
 
                                 //Add needed properties
                                 value.Add(new JProperty("@xsi:type", new JObject()));
@@ -1032,8 +1100,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 value.Add(new JProperty("#text", new JObject()));
 
                                 //Give them values
-                                value["@xsi:type"] = "xs:string";
-                                value["#text"] = objJsonRequest["PM_Monitored"].ToString();
+                                value["@xsi:type"] = "xs:boolean";
+                                value["#text"] = objJsonRequest["PM_Monitored"].ToString()=="Y"?"true":"false";
                                 break;
                             }
                         }
@@ -1098,8 +1166,8 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 value.Add(new JProperty("#text", new JObject()));
 
                                 //Give them values
-                                value["@xsi:type"] = "xs:string";
-                                value["#text"] = objJsonRequest["PM_Selection"].ToString();
+                                value["@xsi:type"] = "xs:boolean";
+                                value["#text"] = objJsonRequest["PM_Selection"].ToString()=="Y"?"true":"false";
                                 break;
                             }
                         }
@@ -1139,7 +1207,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 objreq["paymentHeaderDTO"]["paymentID"] = objJsonRequest["PM_CR_PaymentID"];
                 //Create new object for the new array
                 JObject? updatedJson = new JObject();
-                updatedJson["name"] = outputArray;
+                updatedJson["column"] = outputArray;
                 objreq["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].Replace(updatedJson);
 
 
@@ -1485,7 +1553,10 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                 objStrJson.PCON_ContactId = objPartyDetails.partyIndividualDetail.party.partyID;
                 objStrJson.PCON_FirstName = objPartyDetails.partyIndividualDetail.partyIndNameDetail.Where(a => a.partyIndName.partyIndNameID == a.partyName.partyNameID && a.partyName.isPrimary == true).Select(b => b.partyIndName.firstName).FirstOrDefault();
                 objStrJson.PCON_LastName = objPartyDetails.partyIndividualDetail.partyIndNameDetail.Where(a => a.partyIndName.partyIndNameID == a.partyName.partyNameID && a.partyName.isPrimary == true).Select(b => b.partyIndName.lastName).FirstOrDefault();
-                objStrJson.PCON_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail.Where(a => a.isPrimary == true).Select(b => b.emailAddress).FirstOrDefault();
+                if (objPartyDetails.partyIndividualDetail.partyEmail != null)
+                {
+                    objStrJson.PCON_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail.Where(a => a.isPrimary == true).Select(b => b.emailAddress).FirstOrDefault();
+                }
                 objStrJson.PCON_MobilePhone = objPartyDetails.partyIndividualDetail.partyPhone.Where(a => a.isPrimary == true).Select(b => b.fullPhoneNumber).FirstOrDefault();
 
             }

@@ -335,5 +335,69 @@ namespace ClaimsPay.Shared
         }
 
         #endregion
+
+        #region Update Payment Header Details
+        public async Task<string> UpdatePaymentHeaderDetails(string payload, LoggingConfiguration config)
+        {
+            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
+            try
+            {
+
+                _logger.Info("\r\n");
+
+                _logger.Info("\r\n");
+                _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Update Payment Header Details ");
+                _logger.Info("");
+
+
+                string? baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
+                string? URI = baseURI + "/v3/paymentheader";
+
+                _logger.Info("\r\n");
+                _logger.Info("Request URI");
+                _logger.Info(URI);
+
+                _logger.Info("\r\n");
+                _logger.Info("Request to DC Payment Header Update");
+                _logger.Info(payload.ToString());
+
+                objhttpClient.DefaultRequestHeaders.Clear();
+                objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
+                objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
+
+                var content = JObject.Parse(payload);
+                var stringContent = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
+
+                var responsePutPaymentHeader = await objhttpClient.PutAsync(URI, stringContent);
+                var resultPaymentHeaderUpdate = responsePutPaymentHeader.Content.ReadAsStringAsync();
+
+                _logger.Info("\r\n");
+                _logger.Info("Response");
+                _logger.Info(resultPaymentHeaderUpdate.Result.ToString());
+
+                return resultPaymentHeaderUpdate.Result.ToString();
+                _logger.Info("\r\n");
+                _logger.Info("Update Payment Header Details Executed Successfully");
+            }
+
+            catch (Exception ex)
+            {
+
+                _logger.Info("\r\n");
+                _logger.Info("Update Payment Header Details Execution failed");
+                _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
+
+            }
+            finally
+            {
+                //_logger.Info("------------------------------------------------------------------ || Log End || -------------------------------------------------------------------------");
+                // NLog.LogManager.Shutdown();
+            }
+
+            return "";
+        }
+
+        #endregion
+
     }
 }
