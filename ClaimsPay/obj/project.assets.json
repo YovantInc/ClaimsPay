@@ -1151,11 +1151,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
+      "projectUniqueName": "C:\\Akshay\\Yovant\\ClaimsPay\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
       "projectName": "ClaimsPay",
-      "projectPath": "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
+      "projectPath": "C:\\Akshay\\Yovant\\ClaimsPay\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
       "packagesPath": "C:\\Users\\AkshayDebadwar\\.nuget\\packages\\",
-      "outputPath": "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\obj\\",
+      "outputPath": "C:\\Akshay\\Yovant\\ClaimsPay\\ClaimsPay\\ClaimsPay\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
