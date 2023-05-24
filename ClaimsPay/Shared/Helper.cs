@@ -224,28 +224,40 @@ namespace ClaimsPay.Shared
                 {
                     if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
                     {
-                        ClaimsPayType = Column.value["#text"].Value;
+                        if (Column.value.ToString().Contains("#text"))
+                        {
+                            ClaimsPayType = Column.value["#text"].Value;
+                        }
                     }
                 }
                 else if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_ClaimsPayRequestType))
                 {
                     if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
                     {
-                        ClaimsPayTypeRequest = Column.value["#text"].Value;
+                        if (Column.value.ToString().Contains("#text"))
+                        {
+                            ClaimsPayTypeRequest = Column.value["#text"].Value;
+                        }
                     }
                 }
                 else if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_LoanAccountNumber))
                 {
                     if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
                     {
-                        LoanAccountNumber = Column.value["#text"].Value;
+                        if (Column.value.ToString().Contains("#text"))
+                        {
+                            LoanAccountNumber = Column.value["#text"].Value;
+                        }
                     }
                 }
                 else if (Column["name"].Value == string.Concat("PaymentCstm.", Constants.DATAITEM_ClaimsPayMethod))
                 {
                     if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
                     {
-                        ClaimsPayMethod = Column.value["#text"].Value;
+                        if (Column.value.ToString().Contains("#text"))
+                        {
+                            ClaimsPayMethod = Column.value["#text"].Value;
+                        }
                     }
 
                 }
@@ -253,7 +265,11 @@ namespace ClaimsPay.Shared
                 {
                     if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
                     {
-                        bool approvalRequiredval = Convert.ToBoolean(Column.value["#text"].Value);
+                        bool approvalRequiredval = false;
+                        if (Column.value.ToString().Contains("#text"))
+                        {
+                            approvalRequiredval = Convert.ToBoolean(Column.value["#text"].Value);
+                        }
                         if (approvalRequiredval)
                         {
                             approvalRequired = "Y";
@@ -262,6 +278,7 @@ namespace ClaimsPay.Shared
                         {
                             approvalRequired = "N";
                         }
+
                     }
 
                 }
@@ -269,10 +286,14 @@ namespace ClaimsPay.Shared
                 {
                     if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
                     {
-                        bool printNowVal = Convert.ToBoolean(Column.value["#text"].Value);
-                        if (printNowVal)
+                        if (Column.value.ToString().Contains("#text"))
                         {
-                            printNow = "Y";
+                            bool printNowVal = Convert.ToBoolean(Column.value["#text"].Value);
+
+                            if (printNowVal)
+                            {
+                                printNow = "Y";
+                            }
                         }
 
                     }
@@ -282,10 +303,13 @@ namespace ClaimsPay.Shared
                 {
                     if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
                     {
-                        bool expediteval = Convert.ToBoolean(Column.value["#text"].Value);
-                        if (expediteval)
+                        if (Column.value.ToString().Contains("#text"))
                         {
-                            expedite = "Y";
+                            bool expediteval = Convert.ToBoolean(Column.value["#text"].Value);
+                            if (expediteval)
+                            {
+                                expedite = "Y";
+                            }
                         }
 
                     }
@@ -295,10 +319,13 @@ namespace ClaimsPay.Shared
                 {
                     if ((Column.value["@xsi:nil"] == null) || (Column.value["@xsi:nil"].Value == "false"))
                     {
-                        bool certifiedval = Convert.ToBoolean(Column.value["#text"].Value);
-                        if (certifiedval)
+                        if (Column.value.ToString().Contains("#text"))
                         {
-                            certified = "Y";
+                            bool certifiedval = Convert.ToBoolean(Column.value["#text"].Value);
+                            if (certifiedval)
+                            {
+                                certified = "Y";
+                            }
                         }
 
                     }
