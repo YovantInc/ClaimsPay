@@ -21,10 +21,7 @@ namespace ClaimsPay.Shared
         string ClaimsPayTypeRequest = string.Empty;
         string LoanAccountNumber = string.Empty;
         string ClaimsPayMethod = string.Empty;
-        bool approvalRequired = false;
-        bool printNow = false;
-        bool certified = false;
-        bool expedite = false;
+       
         #region Get Loss Details
         public async Task<string> GetLossDetails(string LossID, LoggingConfiguration config)
         {
@@ -148,18 +145,18 @@ namespace ClaimsPay.Shared
                 string? baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
                 string? URI = baseURI + "/v2/payments/" + paymentID + "/paymentHeader?includeExtendedData=true";
 
-                _logger.Info("\r\n");
-                _logger.Info("Request");
-                _logger.Info(URI);
+                //_logger.Info("\r\n");
+                //_logger.Info("Request");
+                //_logger.Info(URI);
                 objhttpClient.DefaultRequestHeaders.Clear();
                 objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
                 objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
 
                 var result = await objhttpClient.GetAsync(URI).Result.Content.ReadAsStringAsync();
 
-                _logger.Info("\r\n");
-                _logger.Info("Response");
-                _logger.Info(result.ToString());
+                //_logger.Info("\r\n");
+                //_logger.Info("Response");
+                //_logger.Info(result.ToString());
 
                 return result.ToString();
                 _logger.Info("\r\n");
@@ -338,13 +335,13 @@ namespace ClaimsPay.Shared
         #endregion
 
         #region Set Nlog Config 
-        public LoggingConfiguration SetNlogConfig(string logPath, string logName)
+        public LoggingConfiguration SetNlogConfig(string logPath, string logName,string paymentID)
         {
             LoggingConfiguration config = new LoggingConfiguration();
             var consoleTarget = new FileTarget
             {
                 Name = "logfile",
-                FileName = "" + logPath + "//" + logName + "_" + DateTime.Now.ToString("dd-MM-yyyy") + ".txt",
+                FileName = "" + logPath + "//" + logName + "_" + DateTime.Now.ToString("dd-MM-yyyy")+"_"+paymentID + ".txt",
                 Layout = "${message}"
             };
             config.AddRule(LogLevel.Debug, LogLevel.Fatal, consoleTarget, "*");
@@ -364,9 +361,14 @@ namespace ClaimsPay.Shared
         #endregion
 
         #region Update Payment Header Details
-        public async Task<string> UpdatePaymentHeaderDetails(string payload, LoggingConfiguration config)
+        public async Task UpdatePaymentHeaderDetails(string payload, string logName,string paymentID)
         {
+
+            string? LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = SetNlogConfig(LogPath!, logName, paymentID);
             var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
+
+            string str = string.Empty;
             try
             {
 
@@ -376,7 +378,7 @@ namespace ClaimsPay.Shared
                 _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Update Payment Header Details ");
                 _logger.Info("");
 
-
+                
                 string? baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
                 string? URI = baseURI + "/v3/paymentheader";
 
@@ -396,13 +398,13 @@ namespace ClaimsPay.Shared
                 var stringContent = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
 
                 var responsePutPaymentHeader = await objhttpClient.PutAsync(URI, stringContent);
-                var resultPaymentHeaderUpdate = responsePutPaymentHeader.Content.ReadAsStringAsync();
+                var resultPaymentHeaderUpdate = responsePutPaymentHeader.Content.ReadAsStringAsync().Result;
 
                 _logger.Info("\r\n");
                 _logger.Info("Response");
-                _logger.Info(resultPaymentHeaderUpdate.Result.ToString());
+                _logger.Info(resultPaymentHeaderUpdate.ToString());
 
-                return resultPaymentHeaderUpdate.Result.ToString();
+                //return "";// resultPaymentHeaderUpdate.ToString();
                 _logger.Info("\r\n");
                 _logger.Info("Update Payment Header Details Executed Successfully");
             }
@@ -413,7 +415,7 @@ namespace ClaimsPay.Shared
                 _logger.Info("\r\n");
                 _logger.Info("Update Payment Header Details Execution failed");
                 _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
-
+                //return "";
             }
             finally
             {
@@ -421,7 +423,7 @@ namespace ClaimsPay.Shared
                 // NLog.LogManager.Shutdown();
             }
 
-            return "";
+          //return "";
         }
 
         #endregion

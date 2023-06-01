@@ -3,7 +3,7 @@
     // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class RestData
     {
-        public string session { get; set; }
+        public string? session { get; set; }
         public Str_Json? str_json { get; set; }
     }
 
