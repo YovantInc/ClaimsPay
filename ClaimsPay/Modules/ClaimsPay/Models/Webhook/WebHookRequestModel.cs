@@ -29,7 +29,7 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Webhook
     public class Columns
     {
         [JsonPropertyName("column")]
-        public List<Column> column { get; set; }
+        public List<Column>? column { get; set; }
     }
 
     public class Entitydata
@@ -62,7 +62,7 @@ namespace ClaimsPay.Modules.ClaimsPay.Models.Webhook
     public class Key
     {
         [JsonPropertyName("name")]
-        public string name { get; set; }
+        public string? name { get; set; }
 
         [JsonPropertyName("datatype")]
         public string? datatype { get; set; }

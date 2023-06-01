@@ -25,7 +25,7 @@
         public object? locationDetailsLine3 { get; set; }
         public object? locationDetailsLine4 { get; set; }
         public double? longitude { get; set; }
-        public string nationalDivisionPrimary { get; set; }
+        public string? nationalDivisionPrimary { get; set; }
         public string? nationalDivisionSecondary { get; set; }
         public object? oldAddressCountryCode { get; set; }
         public string?  postalCode { get; set; }
@@ -69,7 +69,7 @@
         public object? externalID { get; set; }
         public string? geographicFormatCode { get; set; }
         public bool? isInActive { get; set; }
-        public string lastTransactionID { get; set; }
+        public string? lastTransactionID { get; set; }
         public DateTime? lastUpdatedDate { get; set; }
         public string? number { get; set; }
         public string? partyID { get; set; }
@@ -211,7 +211,7 @@
     public class PartyDetails
     {
         public bool? isPerformer { get; set; }
-        public PartyBusinessDetail partyBusinessDetail { get; set; }
+        public PartyBusinessDetail? partyBusinessDetail { get; set; }
         public string? partyID { get; set; }
         public PartyIndividualDetail? partyIndividualDetail { get; set; }
         public object? partyInternalDetail { get; set; }
