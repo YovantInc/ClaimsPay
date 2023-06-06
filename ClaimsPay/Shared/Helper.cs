@@ -8,6 +8,7 @@ using System.Text;
 using ClaimsPay.Modules.ClaimsPay.Models;
 
 using LogLevel = NLog.LogLevel;
+using System.Security.Claims;
 
 namespace ClaimsPay.Shared
 {
@@ -72,7 +73,7 @@ namespace ClaimsPay.Shared
                 // NLog.LogManager.Shutdown();
             }
 
-            return objResponse["loss"][0]["lossDate"].ToString();
+            return objResponse["loss"][0].ToString();
         }
         #endregion
 
@@ -427,6 +428,63 @@ namespace ClaimsPay.Shared
         }
 
         #endregion
+
+        #region Get Claims Summary
+        public async Task<string> GetClaimsSummary(string claimID, LoggingConfiguration config)
+        {
+            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
+            try
+            {
+
+                //_logger.Info("\r\n");
+
+                //_logger.Info("\r\n");
+                //_logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Get Party Detail ");
+                //_logger.Info("");
+
+                string baseURI = AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIURI"];
+
+                string URI = baseURI + "/v3/Claims/" + claimID + "/ClaimSummary";
+
+                //_logger.Info("\r\n");
+                //_logger.Info("Request");
+                //_logger.Info(URI);
+                objhttpClient.DefaultRequestHeaders.Clear();
+                objhttpClient.DefaultRequestHeaders.Add("userid", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIDefaultUser"]);
+                objhttpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", AppConfig.configuration?.GetSection($"Modules:DuckcreekConfig")["ClaimAPIKEY"]);
+
+                var content = JObject.Parse("{\"ClaimID\":\""+claimID+"\",\"IncludeAgentsData\":false,\"IncludePerformerData\":false,\"IncludeFinancialSummaryData\":false,\"IncludeLitigationDetails\":false,\"IncludeLiabilityDetails\":false,\"IncludeExtendedDataforClaimAndClaimGroup\":false,\"includeExtendedDataForAgent\":false,\"IncludeExtendedDataForPolicy\":false,\"IncludeExtendedDataForLine\":false,\"IncludeExtendedDataForParticipantData\":false,\"IncludeExtendedDataForPerformer\":false,\"IncludeExtendedDataForClaimFinSummary\":false,\"IncludeExtendedDataForLitigationDetails\":false,\"IncludeExtendedDataForLiabilityDetails\":false,\"IncludeExtendedDataforItems\":false}");
+                var stringContent = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
+
+                var result = await objhttpClient.PostAsync(URI,stringContent).Result.Content.ReadAsStringAsync();
+
+                //_logger.Info("\r\n");
+                //_logger.Info("Response");
+                //_logger.Info(result.ToString());
+
+                return result.ToString();
+                //_logger.Info("\r\n");
+                //_logger.Info("Party Details Executed Successfully");
+            }
+
+            catch (Exception ex)
+            {
+                _logger.Info("\r\n");
+                _logger.Info("Party Detail Execution failed");
+                _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
+
+            }
+            finally
+            {
+                //_logger.Info("------------------------------------------------------------------ || Log End || -------------------------------------------------------------------------");
+                // NLog.LogManager.Shutdown();
+            }
+
+            return "";
+        }
+
+        #endregion
+
 
     }
 }
