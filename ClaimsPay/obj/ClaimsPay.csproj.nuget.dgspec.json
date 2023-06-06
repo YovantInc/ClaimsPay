@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Subham\\Desktop\\OneInc Claims\\Repository\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj": {}
+    "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Subham\\Desktop\\OneInc Claims\\Repository\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj": {
+    "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Subham\\Desktop\\OneInc Claims\\Repository\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
+        "projectUniqueName": "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
         "projectName": "ClaimsPay",
-        "projectPath": "C:\\Users\\Subham\\Desktop\\OneInc Claims\\Repository\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
-        "packagesPath": "C:\\Users\\Subham\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Subham\\Desktop\\OneInc Claims\\Repository\\ClaimsPay\\ClaimsPay\\obj\\",
+        "projectPath": "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\ClaimsPay.csproj",
+        "packagesPath": "C:\\Users\\AkshayDebadwar\\.nuget\\packages\\",
+        "outputPath": "C:\\Akshay\\Personal\\ClaimsPay\\ClaimsPay\\ClaimsPay\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\Subham\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\AkshayDebadwar\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -40,9 +44,17 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
+            "Aspose.PDF": {
+              "target": "Package",
+              "version": "[23.5.0, )"
+            },
             "FluentValidation.AspNetCore": {
               "target": "Package",
               "version": "[11.2.2, )"
+            },
+            "IronPdf": {
+              "target": "Package",
+              "version": "[2023.6.10, )"
             },
             "Microsoft.AspNetCore.Http": {
               "target": "Package",
@@ -63,6 +75,14 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.2.3, )"
+            },
+            "Syncfusion.Pdf.Net.Core": {
+              "target": "Package",
+              "version": "[21.2.8, )"
+            },
+            "iTextSharp": {
+              "target": "Package",
+              "version": "[5.5.13.3, )"
             }
           },
           "imports": [
@@ -84,7 +104,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
         }
       }
     }

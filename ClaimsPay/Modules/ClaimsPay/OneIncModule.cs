@@ -53,7 +53,7 @@ namespace ClaimsPay.Modules.OneInc
             #endregion
 
             #region Create Vendor
-            endpoints.MapPost($"CreateVendor", async Task<JObject> (HttpRequest request) =>
+            endpoints.MapPost($"CreateVendor", async Task (HttpRequest request) =>
             {
                 var body = new StreamReader(request.Body);
                 var requestJson = await body.ReadToEndAsync();
@@ -64,7 +64,7 @@ namespace ClaimsPay.Modules.OneInc
 
                 JObject jobj = JObject.Parse(result.ToString());
 
-                return await Task.FromResult(jobj);
+                //return await Task.FromResult(jobj);
             }).AddEndpointFilter<ClaimsPayFilter>()
             .AddEndpointFilter<ClaimsPayIPFilter>();
             #endregion
@@ -194,7 +194,9 @@ namespace ClaimsPay.Modules.OneInc
             #region Sample Endpoint
             endpoints.MapPost($"SampleEndpoint", async Task<string> (HttpRequest request) =>
             {
-                //var temp = await objClaimsPayDataHandler.GetSessionID();
+
+
+                //objClaimsPayDataHandler.GeneratePDF("");
                 //var body = new StreamReader(request.Body);
                 //var requestJson = await body.ReadToEndAsync();
                 //var authHeader = request.Headers["Authorization"].ToString();
@@ -223,6 +225,7 @@ namespace ClaimsPay.Modules.OneInc
             #region Default 
             endpoints.MapGet($"/", async Task<string> (HttpRequest request) =>
             {
+
                 return "Claims Pay Middleware Started";
             });
             #endregion

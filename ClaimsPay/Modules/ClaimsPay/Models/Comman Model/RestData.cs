@@ -77,6 +77,9 @@
         public string? PM_Expedite { get; set; }
         public string? PM_PrintNow { get; set; }
         public string? PM_Certified { get; set; }
+        public string? PM_Filename { get; set; }
+        public string? PM_Document { get; set; }
+
 
     }
 

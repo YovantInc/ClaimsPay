@@ -25,6 +25,25 @@ using ClaimsPay.Modules.ClaimsPay.Models.Webhook;
 using System.Linq.Expressions;
 using System.Linq;
 using System.Collections.Generic;
+using iTextSharp.text.pdf;
+using iTextSharp.text;
+using System.Data;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Options;
+using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
+using System.Net;
+//using IronPdf;
+//using Aspose.Pdf.Text;
+//using Aspose.Pdf;
+//using IronPdf.Pages;
+
+//using Syncfusion.Pdf;
+//using Syncfusion.Pdf.Graphics;
+//using Syncfusion.Drawing;
+//using System.IO;
+//using Syncfusion.Pdf.Grid;
+//using PdfPage = Syncfusion.Pdf.PdfPage;
+//using PdfDocument = Syncfusion.Pdf.PdfDocument;
 
 namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 {
@@ -171,6 +190,9 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     string? printNow = string.Empty;
                     string? expedite = string.Empty;
                     string? certified = string.Empty;
+                    string? claimNumber = string.Empty;
+                    string? policyNumber = string.Empty;
+                    string? lossDescription = string.Empty;
                     //Read Payment Headers
                     JObject? objextendedData = JObject.Parse(requestJson["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].ToString());
                     helper.ReadClaimsPayFields(objextendedData!, ref ClaimsPayType, ref ClaimsPayTypeRequest, ref LoanAccountNumber, ref ClaimsPayMethod, ref approvalRequired, ref printNow, ref certified, ref expedite);
@@ -192,7 +214,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
                         objStrJson.PM_UserId = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["Default_PM_User_ID"];
                         objStrJson.PM_User_FirstName = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["Default_PM_User_FirstName"];
-                        objStrJson.PM_User_LastName = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["Default_PM_User_LastName"];
+                        objStrJson.PM_User_LastName = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["PM_User_LastName"];
 
                     }
                     else if (objDTOModel.PaymentHeader.PaymentType.ToUpper() == "REG")
@@ -219,10 +241,30 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
 
                     //Mapping From Claim DTO
-                    if (objDTOModel.PaymentHeader.PaymentType != "BLK")
+                    if (objDTOModel.PaymentHeader.PaymentType == "BLK")
                     {
+
+                        var responseClaimSummary = await helper.GetClaimsSummary(objDTOModel.LineDTOs[0].ClaimID.ToString(), config);
+                        JObject objClaimSummary = JObject.Parse(responseClaimSummary.ToString());
+
+                        claimNumber = objClaimSummary["claimSummaryWithAgentData"]["claimSummary"]["claimDetailsDTO"]["claim"]["claimNumber"].ToString();
+                        policyNumber = objClaimSummary["claimSummaryWithAgentData"]["claimSummary"]["policyDetail"]["policyNumber"].ToString();
+                        lossDescription = objClaimSummary["claimSummaryWithAgentData"]["claimSummary"]["claimDetailsDTO"]["loss"]["lossDescription"].ToString();
+
+                        objStrJson.CL_ClaimNumber = objClaimSummary["claimSummaryWithAgentData"]["claimSummary"]["claimDetailsDTO"]["claim"]["claimNumber"].ToString();
+                        objStrJson.CL_DateofLoss = Convert.ToDateTime(objClaimSummary["claimSummaryWithAgentData"]["claimSummary"]["claimDetailsDTO"]["loss"]["lossDate"]).ToString("yyyy-MM-dd");
+                        objStrJson.CL_PolicyNumber = objClaimSummary["claimSummaryWithAgentData"]["claimSummary"]["policyDetail"]["policyNumber"].ToString();
+                        //Mapping From Line DTO
+                        objStrJson.PM_Additional_Text_9 = objClaimSummary["claimSummaryWithAgentData"]["claimSummary"]["claimDetailsDTO"]["loss"]["lossDescription"].ToString();
+                        objStrJson.CL_CauseofLoss = await helper.GetCauseOfLoss(objClaimSummary["claimSummaryWithAgentData"]["claimSummary"]["claimDetailsDTO"]["loss"]["causeOfLoss"].ToString());
+                    }
+                    else if (objDTOModel.PaymentHeader.PaymentType == "REG")
+                    {
+                        JObject objlossDetails = JObject.Parse(await helper.GetLossDetails(objDTOModel.ClaimDTO.LossID, config));
+                        objStrJson.PM_Additional_Text_9 = objlossDetails["loss"]["lossDescription"].ToString().Length > 250 ? objlossDetails["loss"]["lossDescription"].ToString().Remove(251) : objlossDetails["loss"]["lossDescription"].ToString();
                         objStrJson.CL_ClaimNumber = objDTOModel.ClaimDTO.ClaimID;
-                        objStrJson.CL_DateofLoss = Convert.ToDateTime(await helper.GetLossDetails(objDTOModel.ClaimDTO.LossID, config)).ToString("yyyy-MM-dd");
+                        
+                        objStrJson.CL_DateofLoss = Convert.ToDateTime(objlossDetails["loss"]["lossDate"]).ToString("yyyy-MM-dd");
                         objStrJson.CL_PolicyNumber = objDTOModel.ClaimDTO.PolicyID;
                         //Mapping From Line DTO
                         objStrJson.CL_CauseofLoss = await helper.GetCauseOfLoss(objDTOModel.LineDTOs[0].CauseOfLoss);
@@ -277,6 +319,10 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                             objStrJson.PMETHOD = "";
                             break;
                     }
+                    if(objDTOModel.PaymentPayeeDataObjectsList.Count > 2)
+                    {
+                        objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
+                    }
 
                     switch (ClaimsPayTypeRequest)
                     {
@@ -304,9 +350,6 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
 
                     //check how many Payees are present
-                    bool IsBussiness = false;
-                    bool IsPCONFilled = false;
-                    bool IsCurrentPCON = false;
                     if (objDTOModel.PaymentPayeeDataObjectsList.Count > 1)
                     {
                         if (objDTOModel.PaymentPayeeDataObjectsList.Count > 2)
@@ -315,7 +358,9 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                             objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
                         }
 
-
+                        bool IsBussiness = false;
+                        bool IsPCONFilled = false;
+                        bool IsCurrentPCON = false;
                         int i = 1;
                         foreach (var item in objDTOModel.PaymentPayeeDataObjectsList)
                         {
@@ -463,22 +508,14 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 objStrJson.PMETHOD = Constants.C_KEY_Let_Customer_Pickup_Value;
 
                                 FillPCON(objStrJson, objPartyDetails);
-                                if (!string.IsNullOrEmpty(Reportable_PartyId))
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
-                                }
+
                                 break;
                             case Constants.C_KEY_Contacts + Constants.C_KEY_Check:
                                 objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
 
                                 FillPCON(objStrJson, objPartyDetails);
-                                if (!string.IsNullOrEmpty(Reportable_PartyId))
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
-                                }
+
                                 break;
 
                             case Constants.C_KEY_Contacts:
@@ -486,348 +523,134 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
 
                                 FillPCON(objStrJson, objPartyDetails);
-                                if (!string.IsNullOrEmpty(Reportable_PartyId))
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
-                                }
+
                                 break;
                             case Constants.C_KEY_Contacts_and_Vendor:
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
                                 objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
+
+                                objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
+                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                FillBus(objStrJson, objPartyDetails);
+                                if (!string.IsNullOrEmpty(Reportable_PartyId))
                                 {
                                     objStrJson.PCON_Approval_Reqd = approvalRequired;
                                     FillPCON(objStrJson, objReportablePartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
                                 }
                                 break;
                             case Constants.C_KEY_Contacts_and_Vendor + Constants.C_KEY_Check:
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
                                 objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
 
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
+                                objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
+                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                FillBus(objStrJson, objPartyDetails);
+                                if (!string.IsNullOrEmpty(Reportable_PartyId))
                                 {
                                     objStrJson.PCON_Approval_Reqd = approvalRequired;
                                     FillPCON(objStrJson, objReportablePartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
                                 }
                                 break;
                             case Constants.C_KEY_Contacts_and_Vendor + Constants.C_KEY_Let_Customer_Pickup:
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
                                 objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
 
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
+                                objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
+                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                FillBus(objStrJson, objPartyDetails);
+                                if (!string.IsNullOrEmpty(Reportable_PartyId))
                                 {
                                     objStrJson.PCON_Approval_Reqd = approvalRequired;
                                     FillPCON(objStrJson, objReportablePartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
                                 }
                                 break;
 
                             case Constants.C_KEY_Contacts_and_Mortgagee + Constants.C_KEY_Let_Customer_Pickup:
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
                                 objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Mortgagee_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
+
+                                objStrJson.BUS_Type = Constants.C_KEY_Mortgagee_Value;
+                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                FillBus(objStrJson, objPartyDetails);
+                                if (!string.IsNullOrEmpty(Reportable_PartyId))
                                 {
                                     objStrJson.PCON_Approval_Reqd = approvalRequired;
                                     FillPCON(objStrJson, objReportablePartyDetails);
                                 }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
-                                }
-
-                                break;
-                            case Constants.C_KEY_Contacts_and_Mortgagee + Constants.C_KEY_Check_Value:
-                                objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-                                objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Mortgagee_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objReportablePartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
-                                }
-
-                                break;
-                            case Constants.C_KEY_Contacts_and_Mortgagee:
-                                objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-                                objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Mortgagee_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objReportablePartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
-                                }
-
                                 break;
 
                             case Constants.C_KEY_Lienholder + Constants.C_KEY_Let_Customer_Pickup:
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
                                 objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
 
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Lienholder_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
+                                objStrJson.BUS_Type = Constants.C_KEY_Lienholder_Value;
+                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                FillBus(objStrJson, objPartyDetails);
+                                if (!string.IsNullOrEmpty(Reportable_PartyId))
                                 {
                                     objStrJson.PCON_Approval_Reqd = approvalRequired;
                                     FillPCON(objStrJson, objReportablePartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
                                 }
                                 break;
                             case Constants.C_KEY_Lienholder + Constants.C_KEY_Check:
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
                                 objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Lienholder_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
+
+                                objStrJson.BUS_Type = Constants.C_KEY_Lienholder_Value;
+                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                FillBus(objStrJson, objPartyDetails);
+                                if (!string.IsNullOrEmpty(Reportable_PartyId))
                                 {
                                     objStrJson.PCON_Approval_Reqd = approvalRequired;
                                     FillPCON(objStrJson, objReportablePartyDetails);
                                 }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
-                                }
-
                                 break;
                             case Constants.C_KEY_Lienholder:
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
                                 objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
 
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Lienholder_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
+                                objStrJson.BUS_Type = Constants.C_KEY_Lienholder_Value;
+                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                FillBus(objStrJson, objPartyDetails);
+                                if (!string.IsNullOrEmpty(Reportable_PartyId))
                                 {
                                     objStrJson.PCON_Approval_Reqd = approvalRequired;
                                     FillPCON(objStrJson, objReportablePartyDetails);
                                 }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
-                                }
-                                break;
-                            case Constants.C_KEY_Vendor + Constants.C_KEY_Let_Customer_Pickup:
-                                objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-                                objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objReportablePartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
-                                }
-
                                 break;
                             case Constants.C_KEY_Vendor + Constants.C_KEY_Check:
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
                                 objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
 
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
+                                objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
+                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                FillBus(objStrJson, objPartyDetails);
+                                if (!string.IsNullOrEmpty(Reportable_PartyId))
                                 {
                                     objStrJson.PCON_Approval_Reqd = approvalRequired;
                                     FillPCON(objStrJson, objReportablePartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
                                 }
                                 break;
                             case Constants.C_KEY_Vendor:
                                 objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
                                 objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
 
-                                if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
-                                {
-                                    objStrJson.PCON_Approval_Reqd = approvalRequired;
-                                    FillPCON(objStrJson, objPartyDetails);
-                                    IsPCONFilled = true;
-                                }
-                                else
-                                {
-                                    objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-                                    objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-                                    objStrJson.BUS_TINType = Constants.BUS_TINType;
-                                    FillBus(objStrJson, objPartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && !IsPCONFilled)
+                                objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
+                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
+                                objStrJson.BUS_TINType = Constants.BUS_TINType;
+                                FillBus(objStrJson, objPartyDetails);
+                                if (!string.IsNullOrEmpty(Reportable_PartyId))
                                 {
                                     objStrJson.PCON_Approval_Reqd = approvalRequired;
                                     FillPCON(objStrJson, objReportablePartyDetails);
-                                }
-                                if (!string.IsNullOrEmpty(Reportable_PartyId) && IsPCONFilled)
-                                {
-                                    objStrJson.SCON_Approval_Reqd = approvalRequired;
-                                    FillSCON(objStrJson, objReportablePartyDetails);
                                 }
                                 break;
                         }
@@ -855,7 +678,6 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     _logger.Info("\r\n");
                     _logger.Info("Response From OneInc");
                     _logger.Info(response.Result.ToString());
-
 
                     //Get Payment Header Detail
 
@@ -997,7 +819,11 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
                     Thread t = new Thread(() => WorkThreadFunction(objreq.ToString(), "CreatePaymentHeaderUpdate", requestJson["PaymentHeader"]["PaymentID"].ToString()));
                     t.Start();
 
-                    //helper.UpdatePaymentHeaderDetails(objreq.ToString(), config);
+                    if (objDTOModel.PaymentHeader.PaymentType == "BLK")
+                    {
+                        Thread attachDoc = new Thread(() => AttachDocument(objDTOModel, "AttachDocument", requestJson["PaymentHeader"]["PaymentID"].ToString(), claimNumber, policyNumber, lossDescription));
+                        attachDoc.Start();
+                    }
 
                     _logger.Info("\r\n");
                     _logger.Info("Create Payment Master Executed Successfully");
@@ -1654,7 +1480,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
             Str_Json? objStr_Json = new Str_Json();
 
             string? LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
-            var config = helper.SetNlogConfig(LogPath, "StopPayment", objJsonRequest["PM_CR_PaymentID"].ToString());
+            var config = helper.SetNlogConfig(LogPath, "StopPayment", objJsonRequest["PaymentID"].ToString());
 
             var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
 
@@ -1884,659 +1710,83 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
         #endregion
 
-        //#region Bulk Payment Master
-        //public async Task<JObject> ClaimsPayDataHandlerBulkPaymentMaster(JObject requestJson)
-        //{
-        //    string? LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
-        //    var config = helper.SetNlogConfig(LogPath!, "CreatePaymentMaster Bulk","");
-        //    var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
-
-        //    RestData? objRestData = new RestData();
-        //    Str_Json? objStrJson = new Str_Json();
-        //    DTOModel? objDTOModel = new DTOModel();
-        //    PartyDetails? objPartyDetails = new PartyDetails();
-        //    JObject? json = new JObject();
-        //    try
-        //    {
-        //        _logger.Info("\r\n");
-        //        _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
-        //        _logger.Info("\r\n");
-        //        _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Create Payment Master ");
-        //        _logger.Info("\r\n");
-        //        _logger.Info("Request");
-        //        //log input recieved from DC Claims
-        //        _logger.Info(requestJson.Root);
-
-        //        objDTOModel = JsonConvert.DeserializeObject<DTOModel>(requestJson.ToString());
-
-        //        string sessionID = await GetSessionID(config);
-
-
-        //        if (sessionID.Length > 0)
-        //        {
-        //            string? ClaimsPayType = string.Empty;
-        //            string? ClaimsPayTypeRequest = string.Empty;
-        //            string? LoanAccountNumber = string.Empty;
-        //            string? ClaimsPayMethod = string.Empty;
-        //            string? approvalRequired = string.Empty;
-        //            string? printNow = string.Empty;
-        //            string? expedite = string.Empty;
-        //            string? certified = string.Empty;
-        //            //Read Payment Headers
-        //            JObject? objextendedData = JObject.Parse(requestJson["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].ToString());
-        //            helper.ReadClaimsPayFields(objextendedData!, ref ClaimsPayType, ref ClaimsPayTypeRequest, ref LoanAccountNumber, ref ClaimsPayMethod, ref approvalRequired, ref printNow, ref certified, ref expedite);
-
-
-        //            //Mapping From extended data
-        //            objStrJson.PM_LoanAccountNumber = LoanAccountNumber;
-        //            objStrJson.PM_CarrierId = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["CarrierID"];
-        //            objStrJson.PM_PaymentID = objDTOModel.PaymentHeader.PaymentID;
-        //            objStrJson.PM_Amount = objDTOModel.PaymentHeader.TotalApprovedAmount;
-        //            objStrJson.PM_Certified = certified;
-        //            objStrJson.PM_Expedite = expedite;
-        //            objStrJson.PM_PrintNow = printNow;
-
-
-        //           // objStrJson.PM_UserId = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["Default_PM_User_ID"];//objDTOModel.PerformerDTO.PerformerID;
-        //            //objStrJson.PM_User_FirstName = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["Default_PM_User_FirstName"];// objDTOModel.PerformerDTO.PerformerNameDetailDTO.FirstName;
-        //            //objStrJson.PM_User_LastName = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["PM_User_LastName"];// objDTOModel.PerformerDTO.PerformerNameDetailDTO.LastName;
-
-        //            var result = await helper.GetPartyDetails(objDTOModel.PaymentHeader.UserOrgEntityID.ToString(), config);
-        //            objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(result.ToString())!;
-        //            if (objPartyDetails.partyIndividualDetail.partyEmail != null)
-        //            {
-        //                objStrJson.PM_User_EmailAddress = objPartyDetails.partyIndividualDetail.partyEmail!.Where(a => a.isPrimary == true).Select(b => b.emailAddress).FirstOrDefault();
-        //            }
-        //            //Mapping From AddressDTO_MailTo
-        //            objStrJson.PMA_Street = string.Concat(objDTOModel.AddressDTO_MailTo.LocationDetailsLine1.ToString(), " "
-        //                , objDTOModel.AddressDTO_MailTo.LocationDetailsLine2 == null ? "" : objDTOModel.AddressDTO_MailTo.LocationDetailsLine2);
-        //            objStrJson.PMA_City = objDTOModel.AddressDTO_MailTo.AdminDivisionPrimary;
-        //            objStrJson.PMA_State = await helper.GetState(objDTOModel.AddressDTO_MailTo.NationalDivisionPrimary);
-        //            objStrJson.PMA_Zipcode = objDTOModel.AddressDTO_MailTo.PostalCode;
-        //            objStrJson.PMA_Country = await helper.GetCountry(objDTOModel.AddressDTO_MailTo.CountryCode.ToString());
-        //            objStrJson.PMA_MailTo = objDTOModel.PaymentHeader.MailToName;
-
-
-        //            //Mapping From Claim DTO
-        //            objStrJson.CL_ClaimNumber = "";// objDTOModel.ClaimDTO.ClaimID;
-        //            objStrJson.CL_DateofLoss = "";// Convert.ToDateTime(await helper.GetLossDetails(objDTOModel.ClaimDTO.LossID, config)).ToString("yyyy-MM-dd");
-        //            objStrJson.CL_PolicyNumber = "";//objDTOModel.ClaimDTO.PolicyID;
-
-        //            //Mapping From Line DTO
-        //            objStrJson.CL_CauseofLoss = "";//await helper.GetCauseOfLoss(objDTOModel.LineDTOs[0].CauseOfLoss);
-
-        //            switch (ClaimsPayType)
-        //            {
-        //                case Constants.C_KEY_Contacts:
-        //                    objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_Value;
-        //                    break;
-        //                case Constants.C_KEY_Other:
-        //                    objStrJson.PM_PaymentType = Constants.C_KEY_Other_Value;
-        //                    break;
-        //                case Constants.C_KEY_Vendor:
-        //                    objStrJson.PM_PaymentType = Constants.C_KEY_Vendor_Value;
-        //                    break;
-        //                case Constants.C_KEY_Lienholder:
-        //                    objStrJson.PM_PaymentType = Constants.C_KEY_Lienholder_Value;
-        //                    break;
-        //                case Constants.C_KEY_Contacts_and_Vendor:
-        //                    objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_and_Vendor_Value;
-        //                    break;
-        //                case Constants.C_KEY_Contacts_and_Mortgagee:
-        //                    objStrJson.PM_PaymentType = Constants.C_KEY_Contacts_and_Mortgagee_Value;
-        //                    break;
-
-        //            }
-
-        //            if (objStrJson.PM_PaymentType == Constants.C_KEY_Contacts_and_Mortgagee_Value)
-        //            {
-        //                objStrJson.PA_City = objDTOModel.AddressDTO_MailTo.AdminDivisionPrimary;
-        //                objStrJson.PA_Country = await helper.GetCountry(objDTOModel.AddressDTO_MailTo.CountryCode.ToString());
-        //                objStrJson.PA_State = await helper.GetState(objDTOModel.AddressDTO_MailTo.NationalDivisionPrimary);
-        //                objStrJson.PA_Street = objDTOModel.AddressDTO_MailTo.LocationDetailsLine1;
-        //                objStrJson.PA_Zipcode = objDTOModel.AddressDTO_MailTo.PostalCode;
-        //            }
-
-        //            switch (ClaimsPayMethod)
-        //            {
-        //                case Constants.C_KEY_Let_Customer_Pickup:
-        //                    objStrJson.PMETHOD = Constants.C_KEY_Let_Customer_Pickup_Value;
-        //                    break;
-        //                case Constants.C_KEY_Check:
-        //                    objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
-        //                    break;
-        //                default:
-        //                    objStrJson.PMETHOD = "";
-        //                    break;
-        //            }
-
-        //            switch (ClaimsPayTypeRequest)
-        //            {
-        //                case Constants.C_KEY_Recoverable_Depreciation:
-        //                    objStrJson.PM_RequestReason = Constants.C_KEY_Recoverable_Depreciation_Value;
-        //                    break;
-        //                case Constants.C_KEY_Emergency_Funds:
-        //                    objStrJson.PM_RequestReason = Constants.C_KEY_Emergency_Funds_Value;
-        //                    break;
-        //                case Constants.C_KEY_Loss_Payment:
-        //                    objStrJson.PM_RequestReason = Constants.C_KEY_Loss_Payment_Value;
-        //                    break;
-        //                case Constants.C_KEY_Supplemental_Payment:
-        //                    objStrJson.PM_RequestReason = Constants.C_KEY_Supplemental_Payment_Value;
-        //                    break;
-        //            }
-
-        //            PartyDetails? objReportablePartyDetails = new PartyDetails();
-        //            string? Reportable_PartyId = objDTOModel.PaymentHeader.ReportablePartyID;
-        //            if (!string.IsNullOrEmpty(Reportable_PartyId))
-        //            {
-        //                var reportablePartyDetails = await helper.GetPartyDetails(Reportable_PartyId, config);
-        //                objReportablePartyDetails = JsonConvert.DeserializeObject<PartyDetails>(reportablePartyDetails.ToString());
-        //            }
-
-        //            //check how many Payees are present
-        //            if (objDTOModel.PaymentPayeeDataObjectsList.Count > 1)
-        //            {
-        //                if (objDTOModel.PaymentPayeeDataObjectsList.Count > 2)
-        //                {
-        //                    ClaimsPayMethod = Constants.C_KEY_Check;
-        //                    objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
-        //                }
-
-        //                bool IsBussiness = false;
-        //                bool IsPCONFilled = false;
-        //                bool IsCurrentPCON = false;
-        //                int i = 1;
-        //                foreach (var item in objDTOModel.PaymentPayeeDataObjectsList)
-        //                {
-        //                    IsCurrentPCON = false;
-        //                    var responsePartyDetails = await helper.GetPartyDetails(item.ClientID, config);
-        //                    objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(responsePartyDetails.ToString());
-        //                    //claims pay type and claims pay method value
-        //                    //Get Payee type
-        //                    switch (ClaimsPayType + ClaimsPayMethod)
-        //                    {
-
-        //                        case Constants.C_KEY_Contacts + Constants.C_KEY_Let_Customer_Pickup:
-        //                            objStrJson.PMETHOD = Constants.C_KEY_Let_Customer_Pickup_Value;
-        //                            if (i == 1)
-        //                                FillPCON(objStrJson, objPartyDetails);
-        //                            if (i == 2)
-        //                                FillSCON(objStrJson, objPartyDetails);
-        //                            break;
-        //                        case Constants.C_KEY_Contacts + Constants.C_KEY_Check:
-        //                            objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
-        //                            objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                            if (i == 1)
-        //                                FillPCON(objStrJson, objPartyDetails);
-        //                            if (i == 2)
-        //                                FillSCON(objStrJson, objPartyDetails);
-        //                            break;
-        //                        case Constants.C_KEY_Contacts_and_Vendor:
-        //                            objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                            objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                            if (objPartyDetails.partyType == Constants.PartyType && IsBussiness == false)
-        //                            {
-        //                                objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-        //                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                                objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                                FillBus(objStrJson, objPartyDetails);
-        //                                IsBussiness = true;
-        //                            }
-        //                            if (objPartyDetails.partyType == Constants.PartyTypeIndividual && IsPCONFilled == false)
-        //                            {
-        //                                objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                                FillPCON(objStrJson, objPartyDetails);
-        //                                IsPCONFilled = true;
-        //                                IsCurrentPCON = true;
-        //                            }
-        //                            if (objPartyDetails.partyType == Constants.PartyTypeIndividual && IsPCONFilled == true && !IsCurrentPCON)
-        //                            {
-        //                                objStrJson.SCON_Approval_Reqd = approvalRequired;
-        //                                FillSCON(objStrJson, objPartyDetails);
-        //                            }
-        //                            break;
-        //                        case Constants.C_KEY_Contacts_and_Vendor + Constants.C_KEY_Check:
-        //                            objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                            objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                            if (objPartyDetails.partyType == Constants.PartyType && IsBussiness == false)
-        //                            {
-        //                                objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-        //                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                                objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                                FillBus(objStrJson, objPartyDetails);
-        //                                IsBussiness = true;
-        //                            }
-        //                            if (objPartyDetails.partyType == Constants.PartyTypeIndividual && IsPCONFilled == false)
-        //                            {
-        //                                objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                                FillPCON(objStrJson, objPartyDetails);
-        //                                IsPCONFilled = true;
-        //                                IsCurrentPCON = true;
-        //                            }
-        //                            if (objPartyDetails.partyType == Constants.PartyTypeIndividual && IsPCONFilled == true && !IsCurrentPCON)
-        //                            {
-        //                                objStrJson.SCON_Approval_Reqd = approvalRequired;
-        //                                FillSCON(objStrJson, objPartyDetails);
-        //                            }
-        //                            break;
-        //                        case Constants.C_KEY_Contacts_and_Vendor + Constants.C_KEY_Let_Customer_Pickup:
-        //                            objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                            objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                            if (objPartyDetails.partyType == Constants.PartyType && IsBussiness == false)
-        //                            {
-        //                                objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-        //                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                                objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                                FillBus(objStrJson, objPartyDetails);
-        //                                IsBussiness = true;
-        //                            }
-        //                            if (objPartyDetails.partyType == Constants.PartyTypeIndividual && IsPCONFilled == false)
-        //                            {
-        //                                objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                                FillPCON(objStrJson, objPartyDetails);
-        //                                IsPCONFilled = true;
-        //                                IsCurrentPCON = true;
-        //                            }
-        //                            if (objPartyDetails.partyType == Constants.PartyTypeIndividual && IsPCONFilled == true && !IsCurrentPCON)
-        //                            {
-        //                                objStrJson.SCON_Approval_Reqd = approvalRequired;
-        //                                FillSCON(objStrJson, objPartyDetails);
-        //                            }
-        //                            break;
-
-        //                        case Constants.C_KEY_Contacts_and_Mortgagee + Constants.C_KEY_Let_Customer_Pickup:
-        //                            objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                            objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-        //                            string? ParticipantId = objDTOModel.ParticipantDataObject.ParticipantRolesDTO!.Where(a => a.ParticipantRole == "MTGE").Select(b => b.ParticipantID).FirstOrDefault();
-
-        //                            if (IsBussiness == false && item.InsuranceInvolvementID == ParticipantId)
-        //                            {
-        //                                objStrJson.BUS_Type = Constants.C_KEY_Mortgagee_Value;
-        //                                objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                                objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                                FillBus(objStrJson, objPartyDetails);
-        //                                IsBussiness = true;
-        //                            }
-        //                            if (IsPCONFilled == false && item.InsuranceInvolvementID != ParticipantId)
-        //                            {
-        //                                objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                                FillPCON(objStrJson, objPartyDetails);
-        //                                IsPCONFilled = true;
-        //                                IsCurrentPCON = true;
-        //                            }
-        //                            if (item.InsuranceInvolvementID != ParticipantId && IsPCONFilled == true && !IsCurrentPCON)
-        //                            {
-        //                                objStrJson.SCON_Approval_Reqd = approvalRequired;
-        //                                FillSCON(objStrJson, objPartyDetails);
-        //                            }
-        //                            break;
-
-
-        //                    }
-        //                    i++;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                //check for ClaimsPay Type
-        //                //Check if Reportable Paty value is available
-        //                var responsePartyDetails = await helper.GetPartyDetails(objDTOModel.PaymentPayeeDataObjectsList[0].ClientID, config);
-        //                objPartyDetails = JsonConvert.DeserializeObject<PartyDetails>(responsePartyDetails.ToString());
-
-        //                switch (ClaimsPayType + ClaimsPayMethod)
-        //                {
-        //                    case Constants.C_KEY_Contacts + Constants.C_KEY_Let_Customer_Pickup:
-        //                        objStrJson.PMETHOD = Constants.C_KEY_Let_Customer_Pickup_Value;
-
-        //                        FillPCON(objStrJson, objPartyDetails);
-
-        //                        break;
-        //                    case Constants.C_KEY_Contacts + Constants.C_KEY_Check:
-        //                        objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-
-        //                        FillPCON(objStrJson, objPartyDetails);
-
-        //                        break;
-
-        //                    case Constants.C_KEY_Contacts:
-        //                        objStrJson.PMETHOD = Constants.C_KEY_Check_Value;
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-
-        //                        FillPCON(objStrJson, objPartyDetails);
-
-        //                        break;
-        //                    case Constants.C_KEY_Contacts_and_Vendor:
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                        objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                        objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-        //                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                        objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                        FillBus(objStrJson, objPartyDetails);
-        //                        if (!string.IsNullOrEmpty(Reportable_PartyId))
-        //                        {
-        //                            objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                            FillPCON(objStrJson, objReportablePartyDetails);
-        //                        }
-        //                        break;
-        //                    case Constants.C_KEY_Contacts_and_Vendor + Constants.C_KEY_Check:
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                        objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                        objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-        //                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                        objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                        FillBus(objStrJson, objPartyDetails);
-        //                        if (!string.IsNullOrEmpty(Reportable_PartyId))
-        //                        {
-        //                            objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                            FillPCON(objStrJson, objReportablePartyDetails);
-        //                        }
-        //                        break;
-        //                    case Constants.C_KEY_Contacts_and_Vendor + Constants.C_KEY_Let_Customer_Pickup:
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                        objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                        objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-        //                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                        objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                        FillBus(objStrJson, objPartyDetails);
-        //                        if (!string.IsNullOrEmpty(Reportable_PartyId))
-        //                        {
-        //                            objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                            FillPCON(objStrJson, objReportablePartyDetails);
-        //                        }
-        //                        break;
-
-        //                    case Constants.C_KEY_Contacts_and_Mortgagee + Constants.C_KEY_Let_Customer_Pickup:
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                        objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                        objStrJson.BUS_Type = Constants.C_KEY_Mortgagee_Value;
-        //                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                        objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                        FillBus(objStrJson, objPartyDetails);
-        //                        if (!string.IsNullOrEmpty(Reportable_PartyId))
-        //                        {
-        //                            objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                            FillPCON(objStrJson, objReportablePartyDetails);
-        //                        }
-        //                        break;
-
-        //                    case Constants.C_KEY_Lienholder + Constants.C_KEY_Let_Customer_Pickup:
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                        objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                        objStrJson.BUS_Type = Constants.C_KEY_Lienholder_Value;
-        //                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                        objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                        FillBus(objStrJson, objPartyDetails);
-        //                        if (!string.IsNullOrEmpty(Reportable_PartyId))
-        //                        {
-        //                            objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                            FillPCON(objStrJson, objReportablePartyDetails);
-        //                        }
-        //                        break;
-        //                    case Constants.C_KEY_Lienholder + Constants.C_KEY_Check:
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                        objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                        objStrJson.BUS_Type = Constants.C_KEY_Lienholder_Value;
-        //                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                        objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                        FillBus(objStrJson, objPartyDetails);
-        //                        if (!string.IsNullOrEmpty(Reportable_PartyId))
-        //                        {
-        //                            objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                            FillPCON(objStrJson, objReportablePartyDetails);
-        //                        }
-        //                        break;
-        //                    case Constants.C_KEY_Lienholder:
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                        objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                        objStrJson.BUS_Type = Constants.C_KEY_Lienholder_Value;
-        //                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                        objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                        FillBus(objStrJson, objPartyDetails);
-        //                        if (!string.IsNullOrEmpty(Reportable_PartyId))
-        //                        {
-        //                            objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                            FillPCON(objStrJson, objReportablePartyDetails);
-        //                        }
-        //                        break;
-        //                    case Constants.C_KEY_Vendor + Constants.C_KEY_Check:
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                        objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                        objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-        //                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                        objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                        FillBus(objStrJson, objPartyDetails);
-        //                        if (!string.IsNullOrEmpty(Reportable_PartyId))
-        //                        {
-        //                            objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                            FillPCON(objStrJson, objReportablePartyDetails);
-        //                        }
-        //                        break;
-        //                    case Constants.C_KEY_Vendor:
-        //                        objStrJson.PM_Additional_Text_3 = objStrJson.PMA_MailTo;
-        //                        objStrJson.PM_Additional_Text_1 = objDTOModel.PaymentHeader.InvoiceID;
-
-        //                        objStrJson.BUS_Type = Constants.C_KEY_Vendor_Value;
-        //                        objStrJson.BUS_SubType = Constants.BUS_Sub_Type;
-        //                        objStrJson.BUS_TINType = Constants.BUS_TINType;
-        //                        FillBus(objStrJson, objPartyDetails);
-        //                        if (!string.IsNullOrEmpty(Reportable_PartyId))
-        //                        {
-        //                            objStrJson.PCON_Approval_Reqd = approvalRequired;
-        //                            FillPCON(objStrJson, objReportablePartyDetails);
-        //                        }
-        //                        break;
-        //                }
-
-        //            }
-
-        //            var opt = new JsonSerializerOptions() { WriteIndented = true };
-        //            string strJson = System.Text.Json.JsonSerializer.Serialize<Str_Json>(objStrJson, opt);
-        //            var loginParams = JObject.Parse(strJson);
-
-        //            JObject createPaymentMasterRequest = new JObject(
-        //              new JProperty("session", sessionID),
-        //              new JProperty("str_json", strJson.ToString()));
-        //            _logger.Info("\r\n");
-        //            _logger.Info("Request To OneInc");
-        //            _logger.Info(strJson);
-        //            //createPaymentMasterRequest.Add(new JProperty("PM_PaymentType", "Contact(s) and Vendor"));
-
-        //            baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"];
-        //            string lURL = baseURL + "?method=CreatePaymentMaster&input_type=JSON&response_type=JSON&rest_data=" + System.Web.HttpUtility.UrlEncode(createPaymentMasterRequest.ToString());
-
-        //            var response = objhttpClient.PostAsJsonAsync(lURL, "").Result.Content.ReadAsStringAsync();
-        //            json = JObject.Parse(response.Result.ToString());
-
-        //            _logger.Info("\r\n");
-        //            _logger.Info("Response From OneInc");
-        //            _logger.Info(json.ToString());
-
-
-        //            //Get Payment Header Detail
-        //            string responsePaymentHeaderDetail = string.Empty;
-        //            if (json["Status"].ToString() != "Error")
-        //            {
-        //                responsePaymentHeaderDetail = await helper.GetPaymentHeaderDetails(json["PM_PaymentID"].ToString(), config);
-
-        //                JObject? objreq = JObject.Parse(responsePaymentHeaderDetail.ToString());
-
-        //                JObject? colObj = JObject.Parse(objreq["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].ToString());
-        //                JArray? columArray = JArray.Parse(colObj["column"].ToString());
-
-        //                var jObjects = columArray.ToObject<List<JObject>>();
-
-        //                var DATAITEM_PM_Orig_Method = columArray.Select((x, index) => new { Name = x.Value<string>("name"), Node = x, Index = index })
-        //                                    .Single(x => x.Name == Constants.DATAITEM_FQN_PM_Orig_Method)
-        //                                    .Index;
-        //                var DATAITEM_PM_Status = columArray.Select((x, index) => new { Name = x.Value<string>("name"), Node = x, Index = index })
-        //                                    .Single(x => x.Name == Constants.DATAITEM_FQN_PM_Status)
-        //                                    .Index;
-        //                var DATAITEM_PM_MailTrackingNumber = columArray.Select((x, index) => new { Name = x.Value<string>("name"), Node = x, Index = index })
-        //                                    .Single(x => x.Name == Constants.DATAITEM_FQN_PM_MailTrackingNumber)
-        //                                    .Index;
-
-        //                var DATAITEM_IP_PaymentID = columArray.Select((x, index) => new { Name = x.Value<string>("name"), Node = x, Index = index })
-        //                                    .Single(x => x.Name == Constants.DATAITEM_FQN_IP_PaymentID)
-        //                                    .Index;
-
-        //                foreach (var obj in jObjects)
-        //                {
-        //                    //For PM_Method_Last4Digit
-        //                    if (jObjects.IndexOf(obj) == DATAITEM_PM_Orig_Method)
-        //                    {
-        //                        foreach (var prop in obj.Properties())
-        //                        {
-        //                            if (json.ToString().Contains("PM_PaymentMethod"))
-        //                            {
-        //                                if (prop.Name == "value")                     //Get desired property
-        //                                {
-        //                                    obj.Remove("value");
-        //                                    obj.Add(new JProperty("value", new JObject()));
-
-        //                                    JObject? value = obj["value"] as JObject;
-
-        //                                    //Add needed properties
-        //                                    value.Add(new JProperty("@xsi:type", new JObject()));
-        //                                    value.Add(new JProperty("#text", new JObject()));
-
-        //                                    //Give them values
-        //                                    value["@xsi:type"] = "xs:string";
-        //                                    value["#text"] = json["PM_PaymentMethod"].ToString();
-        //                                    break;
-        //                                }
-        //                            }
-        //                        }
-        //                    }
-        //                    else if (jObjects.IndexOf(obj) == DATAITEM_PM_Status)
-        //                    {
-        //                        foreach (var prop in obj.Properties())
-        //                        {
-        //                            if (json.ToString().Contains("PM_Status"))
-        //                            {
-        //                                if (prop.Name == "value")                     //Get desired property
-        //                                {
-        //                                    obj.Remove("value");
-        //                                    obj.Add(new JProperty("value", new JObject()));
-
-        //                                    JObject? value = obj["value"] as JObject;
-
-        //                                    //Add needed properties
-        //                                    value.Add(new JProperty("@xsi:type", new JObject()));
-        //                                    value.Add(new JProperty("#text", new JObject()));
-
-        //                                    //Give them values
-        //                                    value["@xsi:type"] = "xs:string";
-        //                                    value["#text"] = json["PM_Status"].ToString();
-        //                                    break;
-        //                                }
-        //                            }
-        //                        }
-        //                    }
-        //                    else if (jObjects.IndexOf(obj) == DATAITEM_PM_MailTrackingNumber)
-        //                    {
-        //                        foreach (var prop in obj.Properties())
-        //                        {
-        //                            if (json.ToString().Contains("PM_Id"))
-        //                            {
-        //                                if (prop.Name == "value")                     //Get desired property
-        //                                {
-        //                                    obj.Remove("value");
-        //                                    obj.Add(new JProperty("value", new JObject()));
-
-        //                                    JObject? value = obj["value"] as JObject;
-
-        //                                    //Add needed properties
-        //                                    value.Add(new JProperty("@xsi:type", new JObject()));
-        //                                    value.Add(new JProperty("#text", new JObject()));
-
-        //                                    //Give them values
-        //                                    value["@xsi:type"] = "xs:string";
-        //                                    value["#text"] = json["PM_Id"].ToString();
-        //                                    break;
-        //                                }
-        //                            }
-        //                        }
-        //                    }
-        //                    else if (jObjects.IndexOf(obj) == DATAITEM_IP_PaymentID)
-        //                    {
-        //                        foreach (var prop in obj.Properties())
-        //                        {
-        //                            if (json.ToString().Contains("PM_TranId"))
-        //                            {
-
-        //                                if (prop.Name == "value")                     //Get desired property
-        //                                {
-        //                                    obj.Remove("value");
-        //                                    obj.Add(new JProperty("value", new JObject()));
-
-        //                                    JObject? value = obj["value"] as JObject;
-
-        //                                    //Add needed properties
-        //                                    value.Add(new JProperty("@xsi:type", new JObject()));
-        //                                    value.Add(new JProperty("#text", new JObject()));
-
-        //                                    //Give them values
-        //                                    value["@xsi:type"] = "xs:string";
-        //                                    value["#text"] = json["PM_TranId"].ToString();
-        //                                    break;
-        //                                }
-        //                            }
-        //                        }
-        //                    }
-        //                }
-
-
-        //                JArray? outputArray = JArray.FromObject(jObjects);         //Output array
-        //                JObject? updatedJson = new JObject();
-        //                updatedJson["column"] = outputArray;
-        //                objreq["__extendedData"]["extendeddata"]["table"]["entitydata"]["columns"].Replace(updatedJson);
-
-        //                Thread t = new Thread(() => WorkThreadFunction(objreq.ToString(), config));
-        //                t.Start();
-
-        //                //helper.UpdatePaymentHeaderDetails(objreq.ToString(), config);
-        //            }
-        //            _logger.Info("\r\n");
-        //            _logger.Info("Create Payment Master Executed Successfully");
-        //        }
-        //        else
-        //        {
-        //            _logger.Info("\r\n");
-        //            _logger.Info("Session id not created");
-        //            //Log error session id not created
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.Info("\r\n");
-        //        _logger.Info("Create Payment Master Execution failed");
-        //        _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
-
-        //    }
-        //    finally
-        //    {
-        //        _logger.Info("------------------------------------------------------------------ || Log End || -------------------------------------------------------------------------");
-        //        NLog.LogManager.Shutdown();
-        //    }
-        //    //json = JObject.Parse(requestJson.Root.ToString());
-        //    return json;
-        //}
-        //#endregion
-
+        #region Comman Method For OneInc Call
+        public async Task<string> CallOneInc(Str_Json objReq, LoggingConfiguration config1, string methodName, string payment_ID)
+        {
+            string LogPath = AppConfig.configuration?.GetSection($"Modules:SystemConfig")["LogPath"];
+            var config = helper.SetNlogConfig(LogPath, methodName, payment_ID);
+            var _logger = NLogBuilder.ConfigureNLog(config).GetCurrentClassLogger();
+            JObject json = new JObject();
+          
+            try
+            {
+
+                _logger.Info("-------------------------------------------------------------------|| Log Start || -------------------------------------------------------------------------");
+                
+                _logger.Info(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + " INFO Initiated Attach Document ");
+                _logger.Info("");
+                _logger.Info("\r\n");
+
+                string sessionID = await GetSessionID(config);
+                if (sessionID.Length > 0)
+                {
+
+                    var opt = new JsonSerializerOptions() { WriteIndented = true };
+                    string strJson = System.Text.Json.JsonSerializer.Serialize<Str_Json>(objReq, opt);
+                    JObject objResendEmailsRequest = new JObject(
+                              new JProperty("session", sessionID),
+                              new JProperty("str_json", strJson.ToString()));
+
+                    baseURL = AppConfig.configuration?.GetSection($"Modules:ClaimsPay")["ClaimsPayURI"]; ;
+                    string lURL = baseURL;
+
+                    var collection = new List<KeyValuePair<string, string>>();
+                    collection.Add(new("method", "AttachDocument"));
+                    collection.Add(new("input_type", "JSON"));
+                    collection.Add(new("response_type", "JSON"));
+                    collection.Add(new("rest_data", objResendEmailsRequest.ToString()));
+                                        var content = new FormUrlEncodedContent(collection);
+                                      
+                    var encodedItems = collection.Select(i => WebUtility.UrlEncode(i.Key) + "=" + WebUtility.UrlEncode(i.Value));
+                    var encodedContent = new StringContent(String.Join("&", encodedItems), null, "application/x-www-form-urlencoded");
+
+                    _logger.Info("\r\n");
+                    _logger.Info("Request To OneInc for Attach Document");
+                    _logger.Info(strJson);
+
+                    var result = objhttpClient.PostAsync(lURL, encodedContent).Result.Content.ReadAsStringAsync();
+                    json = JObject.Parse(result.Result.ToString());
+
+                    _logger.Info("\r\n");
+                    _logger.Info("Response from OneInc");
+                    _logger.Info(json);
+                }
+
+                _logger.Info("\r\n");
+                _logger.Info("GetSessionId Executed Successfully");
+
+            }
+            catch (Exception ex)
+            {
+
+                _logger.Info("\r\n");
+                _logger.Info("GetSessionId Execution failed");
+                _logger.Error(DateTime.Now.ToString("dd-MM-yyyy HH:mm") + ex, "ERROR" + ex.ToString());
+
+            }
+            finally
+            {
+                //Logging(logRequest,logResponse,logTime,logType,logMessage,logMethodName)
+                // _logger.Info("------------------------------------------------------------------ || Log End || -------------------------------------------------------------------------");
+                // NLog.LogManager.Shutdown();
+            }
+
+            return json.ToString();
+        }
+
+        #endregion
+
+        #region Internal Method
         public void FillPCON(Str_Json objStrJson, PartyDetails objPartyDetails)
         {
             if (objPartyDetails.partyType == Constants.PartyTypeIndividual)
@@ -2616,7 +1866,7 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
 
             }
         }
-        #endregion
+        
         public void WorkThreadFunction(string objreq, string logName, string paymenyID)
         {
             try
@@ -2630,5 +1880,98 @@ namespace ClaimsPay.Modules.ClaimsPay.DataHandler
         }
 
 
+        public async void AttachDocument(DTOModel objPaymentDetailDTO, string logName, string paymentID, string claimNumber, string policyNumber, string lossDescription)
+        {
+            try
+            {
+                LoggingConfiguration? config = null;
+               
+                RestData? objRequest = new RestData();
+                Str_Json? objStr_Json = new Str_Json();
+                
+
+                DataTable dt = new DataTable();
+                dt.Columns.AddRange(new DataColumn[9] { new DataColumn("Payment Date", typeof(string)),
+                    new DataColumn("Claim No", typeof(string)),
+                    new DataColumn("Line Type",typeof(string)),
+                new DataColumn("Payment Type", typeof(string)),
+                new DataColumn("Amount", typeof(double)),
+                new DataColumn("Invoice Number", typeof(string)),
+                new DataColumn("Claimant Name", typeof(string)),
+                new DataColumn("Policy Number", typeof(string)),
+                new DataColumn("Loss Description", typeof(string))
+            });
+
+                for (int i = 0; i < objPaymentDetailDTO.PaymentDetailDTOs.Count; i++)
+                {
+                    string? lineType = objPaymentDetailDTO.LineDTOs[i].LineTypeDescription;
+                    string? paymentDate = Convert.ToDateTime(objPaymentDetailDTO.PaymentHeader.IssueDate).ToString("yyyy-MM-dd");
+                    double? amount = objPaymentDetailDTO.PaymentDetailDTOs[i].ApprovedAmount.MonetaryAmount;
+                    string? invoiceId = objPaymentDetailDTO.PaymentDetailDTOs[i].InvoiceDetailID;
+                    string? claimantName = objPaymentDetailDTO.LineDTOs[i].ClaimantName;
+                    string? lossDescri = lossDescription.Length > 250 ? lossDescription.Remove(251) : lossDescription;
+                    dt.Rows.Add(paymentDate, claimNumber, lineType, "", amount, invoiceId, claimantName, policyNumber, lossDescri);
+                }
+
+                StringBuilder sb = new StringBuilder();
+
+                sb.Append("<p style='text-align:center;font-size:30px'>Payment Details</p>");
+
+                sb.Append("<p style='text-align:center;font-size:20px'>PaymentID : " + objPaymentDetailDTO.PaymentHeader.PaymentID + " </p>");
+                //Table start.
+                sb.Append("<table cellpadding='5' cellspacing='0' style='border: 1px solid #ccc;font-size: 9pt;font-family:Arial'>");
+
+                //Adding HeaderRow.
+                sb.Append("<tr>");
+                foreach (DataColumn column in dt.Columns)
+                {
+                    sb.Append("<th style='background-color: #B8DBFD;border: 1px solid #ccc'>" + column.ColumnName + "</th>");
+                }
+                sb.Append("</tr>");
+
+
+                //Adding DataRow.
+                foreach (DataRow row in dt.Rows)
+                {
+                    sb.Append("<tr>");
+                    foreach (DataColumn column in dt.Columns)
+                    {
+                        sb.Append("<td style='width:100px;border: 1px solid #ccc'>" + row[column.ColumnName].ToString() + "</td>");
+                    }
+                    sb.Append("</tr>");
+                }
+
+                //Table end.
+                sb.Append("</table>");
+
+
+                var renderer = new HtmlToPdf();
+                renderer.RenderHtmlAsPdf(sb.ToString()).SaveAs("bulkPayment.pdf");
+
+                Byte[] bytes = File.ReadAllBytes("bulkPayment.pdf");
+                String file = Convert.ToBase64String(bytes);
+
+                objStr_Json.PM_Filename = "EOB.pdf";
+                objStr_Json.PM_Document = file;
+                objStr_Json.PM_PaymentID =paymentID;
+
+               
+
+                string str =await CallOneInc(objStr_Json, config, "AttachDocument", paymentID);
+
+            }
+            catch (Exception ex)
+            {
+
+
+
+            }
+
+
+        }
+
+        #endregion
+
+        #endregion
     }
 }
